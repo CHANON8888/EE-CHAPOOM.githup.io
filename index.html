@@ -557,7 +557,27 @@ function fmt(n) {
   if (n==null||isNaN(n)) return '—';
   return Number(n).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
 }
- 
+
+function formatInchSize(sizeStr) {
+  if (!sizeStr) return '-';
+  let s = String(sizeStr).trim();
+  // Only process inch values (ends with ") or pure decimal numbers; leave mm values untouched
+  if (s.endsWith('"') || !isNaN(s)) {
+    let num = parseFloat(s.replace(/"/g, ''));
+    if (isNaN(num)) return sizeStr;
+    let intPart = Math.floor(num);
+    let fracPart = num - intPart;
+    let fracStr = '';
+    if      (Math.abs(fracPart - 0.25) < 0.01) fracStr = '1/4';
+    else if (Math.abs(fracPart - 0.5)  < 0.01) fracStr = '1/2';
+    else if (Math.abs(fracPart - 0.75) < 0.01) fracStr = '3/4';
+    if (fracStr !== '') {
+      return (intPart > 0 ? intPart + ' ' : '') + fracStr + '"';
+    }
+  }
+  return sizeStr; // metric ladder values (e.g. 200mm, 300mm) pass through unchanged
+}
+
 // Lookup row by kW (fallback, not used for component selection)
 function lookup(tbl, kw) {
   let r = tbl[0];
@@ -751,7 +771,7 @@ function renderComps(r) {
     const errTxt = (k === 'vct') ? 'ขนาดสายไม่รองรับ' : '#VALUE!';
     return `<tr${isSel ? ' class="row-sel"' : ''}>
       <td class="rn">${label}${isSel ? badge : ''}</td>
-      <td class="rm">${d.s||'-'}</td>
+      <td class="rm">${formatInchSize(d.s)}</td>
       <td class="ru">${unit}</td>
       <td class="rp ${!hasVal?'err':''}">${hasVal ? fmt(d.p) : errTxt}</td>
     </tr>`;
@@ -773,7 +793,7 @@ function renderComps(r) {
     const errTxt = (k === 'vct') ? 'ขนาดสายไม่รองรับ' : '#VALUE!';
     return `<tr${isSel ? ' class="row-sel"' : ''}>
       <td class="rn">${condLabel}${isSel ? badge : ''}</td>
-      <td class="rm">${d.s||'-'}</td>
+      <td class="rm">${formatInchSize(d.s)}</td>
       <td class="ru">${unit}</td>
       <td class="rp ${!hasVal?'err':''}">${hasVal ? fmt(d.p) : errTxt}</td>
     </tr>`;
@@ -909,7 +929,7 @@ function renderBOQ(r, ck) {
         </tr>
         <tr>
           <td>${condLbl}</td>
-          <td class="spec">${cond.s || '-'}</td>
+          <td class="spec">${formatInchSize(cond.s)}</td>
           <td class="r">${r.dist}</td>
           <td>M.</td>
           <td class="r ${!cond.p ? cabErrCls : ''}">${cond.p ? fmtN(cond.p) : cabErrTxt}</td>
