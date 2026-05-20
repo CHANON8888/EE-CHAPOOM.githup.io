@@ -369,7 +369,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
  
       <!-- CHANGE #2: kW dropdown instead of free-text input -->
       <div class="irow">
-        <label>มอเตอร์</label>
+        <label>มอเตอร์ (kW)</label>
         <select id="kw" class="bin">
           <option value="0.06">0.06</option>
           <option value="0.09">0.09</option>
@@ -837,13 +837,13 @@ function renderComps(r) {
  
   // ── Electrical info rows ──────────────────────────────────────────
   const iworkRow = r.mode==='STAR-DELTA'
-    ? `<tr><td class="rn">กระแสเฟส Star (Ifl ÷ √3)</td><td class="rm">${r.Iwork.toFixed(4)}</td><td class="ru">A</td><td></td></tr>`
+    ? `<tr><td class="rn">กระแสเฟส</td><td class="rm">${r.Iwork.toFixed(4)}</td><td class="ru">A</td><td></td></tr>`
     : '';
   const crow=`
     <tr class="rsec"><td colspan="4"><span class="rslbl">ค่าไฟฟ้า</span></td></tr>
-    <tr><td class="rn">กระแสเต็มพิกัด (Ifl)</td><td class="rm">${r.Ifl.toFixed(4)}</td><td class="ru">A</td><td></td></tr>
+    <tr><td class="rn">กระแสเต็มพิกัด</td><td class="rm">${r.Ifl.toFixed(4)}</td><td class="ru">A</td><td></td></tr>
     ${iworkRow}
-    <tr><td class="rn">พิกัดมาตรฐาน (Ceiling lookup)</td><td class="rm">${r.ratedA}</td><td class="ru">A</td><td></td></tr>`;
+    <tr><td class="rn">พิกัดมาตรฐาน</td><td class="rm">${r.ratedA}</td><td class="ru">A</td><td></td></tr>`;
  
   // ── Non-overload starter components (contactors, timer) ──────────
   const nonOLrows = r.comps.filter(c=>!c.name.startsWith('Overload')).map(c=>`
