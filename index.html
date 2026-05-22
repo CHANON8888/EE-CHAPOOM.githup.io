@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Automatic Motor Starter Calculation</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600
+&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #f4f7fb;
@@ -34,7 +35,8 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
                     radial-gradient(circle at 80% 85%, rgba(124,58,237,0.06) 0%, transparent 50%); }
 .wrap { position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:24px 18px; }
  
-/* TOP — Hero header (large title with gradient accent + subtitle) */
+/* TOP */
+/* TOP — Hero header (Space Grotesk + animated gradient on every char) */
 .topbar {
   display:flex; align-items:center; gap:20px; flex-wrap:wrap;
   background:var(--s1);
@@ -54,7 +56,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 .brand { flex:1 1 280px; min-width:0; position:relative; z-index:1; }
 .brand-title {
   margin:0;
-  font-family:'Space Grotesk', 'Sarabun', sans-serif;
+  font-family:'Space Grotesk','Sarabun',sans-serif;
   font-size:clamp(28px, 4.4vw, 46px);
   font-weight:700;
   letter-spacing:-1.5px;
@@ -71,35 +73,25 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
   animation:gradientShift 8s ease-in-out infinite;
 }
 @keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50%      { background-position: 100% 50%; }
+  0%,100% { background-position:0% 50%; }
+  50%     { background-position:100% 50%; }
 }
-.brand-subtitle {
-  margin:10px 0 0;
-  font-size:14px;
-  color:var(--text2);
-  font-weight:400;
-  letter-spacing:0.1px;
-}
-.tags { display:flex; gap:8px; flex-wrap:wrap; position:relative; z-index:1; }
-.tag {
-  font-size:11px; font-weight:700;
-  padding:6px 14px; border-radius:999px;
-  letter-spacing:0.6px;
-}
-.tag.blue { background:var(--accent-dim); border:1px solid rgba(37,99,235,0.30); color:var(--accent); }
-.tag.green { background:var(--green-dim); border:1px solid rgba(5,150,105,0.30); color:var(--green); }
+/* Legacy ticon rule kept harmless (element removed from HTML) */
+.ticon { display:none; }
+.topbar p { font-size:12px; color:var(--text2); margin-top:2px; }
 
-/* Hero on mobile — keep title readable, subtitle wraps nicely */
 @media (max-width:640px) {
   .topbar { padding:22px 22px; gap:14px; border-radius:14px; }
-  .brand-title { font-size:clamp(22px, 6.5vw, 32px); letter-spacing:-0.8px; }
-  .brand-subtitle { font-size:12.5px; margin-top:7px; }
+  .brand-title { font-size:clamp(22px,6.5vw,32px); letter-spacing:-0.8px; }
 }
 @media (max-width:380px) {
   .topbar { padding:18px 18px; }
   .brand-title { font-size:21px; letter-spacing:-0.5px; }
 }
+.tags { margin-left:auto; display:flex; gap:8px; }
+.tag { font-size:10.5px; font-weight:700; padding:4px 11px; border-radius:20px; letter-spacing:0.5px; }
+.tag.blue { background:var(--accent-dim); border:1px solid rgba(59,130,246,0.3); color:var(--accent); }
+.tag.green { background:var(--green-dim); border:1px solid rgba(16,185,129,0.3); color:var(--green); }
  
 /* GRID */
 .grid { display:grid; grid-template-columns:350px 1fr; gap:18px; }
@@ -696,15 +688,68 @@ const DOL_RATED_TABLE = [
   80, 97, 132, 160, 195, 230, 280, 350, 430, 540, 610, 690
 ];
  
-// Ceiling lookup: find the smallest standard rating >= val in the given table
-function ratedCurrentCeiling(val, table) {
-  for (const rating of table) {
-    if (val <= rating) return rating;
-  }
-  return table[table.length - 1];
+// =====================================================================
+// EXCEL XLOOKUP EQUIVALENTS — Dynamic match_mode via R20/R21/R22/R25
+//
+// หน้าหลักใช้งาน helper cells:
+//   R20 = XLOOKUP(D13, DOL!C5:C38, DOL!C5:C38, "", +1) → ceiling standard current
+//   R21 = XLOOKUP(D13, DOL!C5:C38, DOL!C5:C38, "", -1) → floor standard current
+//   R22 = SIGN(ABS(R21-D13) - ABS(R20-D13))
+//          -1 → floor is closer to Ifl (use floor rating)
+//           0 → equidistant (use ceiling by default)
+//          +1 → ceiling is closer to Ifl (use ceiling rating)
+//   R25 = IF(ISNUMBER(R22), SIGN(ABS(R21-D13)-ABS(R20-D13)), 1)
+//          → dynamic match_mode passed to ALL component XLOOKUP calls (D14–D26)
+//          → if R22 is a number (normal case): use the closer rating
+//          → fallback = 1 (ceiling) when R22 is not a number (edge case)
+//
+// D14 = XLOOKUP(D13, DOL!C5:C38, DOL!D5:D38, "-", R25)  ← match_mode is R25, NOT hardcoded 1
+// Same R25 used for D15, D16, D18–D26 (all component lookups).
+//
+// JS implementation:
+//   dynamicMatchMode(Ifl, table) → returns ratedA (the chosen standard current)
+//     - finds ceiling (R20) and floor (R21) in the given table
+//     - computes R22/R25 to decide which to use
+//   lookupByA(tbl, ratedA) → finds the table data row for that ratedA (match_mode=0 exact)
+ 
+function dynamicMatchMode(Ifl, table) {
+  // R20: XLOOKUP match_mode=+1 → smallest table value >= Ifl  (ceiling)
+  let R20 = table[table.length - 1];
+  for (const v of table) { if (v >= Ifl) { R20 = v; break; } }
+ 
+  // R21: XLOOKUP match_mode=-1 → largest table value <= Ifl  (floor)
+  let R21 = table[0];
+  for (let i = table.length - 1; i >= 0; i--) { if (table[i] <= Ifl) { R21 = table[i]; break; } }
+ 
+  // R22: which standard rating is closer to Ifl?
+  const R22 = Math.sign(Math.abs(R21 - Ifl) - Math.abs(R20 - Ifl));
+  //   R22 = -1 → floor is closer  → use R21 (floor)
+  //   R22 =  0 → equidistant      → use R20 (ceiling, same as default)
+  //   R22 = +1 → ceiling is closer→ use R20 (ceiling)
+ 
+  // R25: IF(ISNUMBER(R22), SIGN(ABS(R21-D13)-ABS(R20-D13)), 1)
+  //   In JS R22 is always a number (Math.sign never returns NaN for finite inputs),
+  //   so R25 = R22 in practice. Fallback to +1 (ceiling) for safety.
+  const R25 = (isFinite(R22)) ? R22 : 1;
+ 
+  // Apply match_mode decision:
+  //   R25 = -1 → floor is closer → pick R21
+  //   R25 =  0 → exact or equidistant → pick R20 (ceiling, safer for electrical sizing)
+  //   R25 = +1 → ceiling is closer → pick R20
+  return (R25 === -1) ? R21 : R20;
 }
  
-// ── SVG icon library (replaces emoji ⚡ 📌 ← ↑ → for cleaner look) ──
+// Exact row lookup by standard rated current (XLOOKUP match_mode=0 on col index 2).
+// After dynamicMatchMode() picks the standard rating, this retrieves the full data row.
+function lookupByA(tbl, ratedA) {
+  let r = tbl[0];
+  for (const row of tbl) {
+    if (ratedA <= row[2] + 0.001) { r = row; break; }
+    r = row;
+  }
+  return r;
+}
+ 
 const ICO = {
   bolt:       `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>`,
   boltStroke: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
@@ -766,16 +811,6 @@ function lookup(tbl, kw) {
   return r;
 }
  
-// Lookup row by rated current (ceiling-rounded A) — col index 2
-function lookupByA(tbl, ratedA) {
-  let r = tbl[0];
-  for (const row of tbl) {
-    if (ratedA <= row[2] + 0.001) { r = row; break; }
-    r = row;
-  }
-  return r;
-}
- 
 function calculate() {
   const kw  = parseFloat(document.getElementById('kw').value);
   const dist= parseFloat(document.getElementById('dist').value);
@@ -797,10 +832,13 @@ function calculate() {
   //   The SD_RATED_TABLE rows are keyed on line current, so we match Ifl directly.
   const Iwork = (mode === 'sd') ? (Ifl / Math.sqrt(3)) : Ifl;
  
-  // Step 3: Ceiling lookup — SD uses Ifl (line current); DOL also uses Ifl.
+  // Step 3: Dynamic match_mode via R20/R21/R22/R25 — mirrors Excel หน้าหลักใช้งาน exactly.
+  //   R25 decides whether to use ceiling (+1) or floor (-1) based on which standard
+  //   current rating is closest to Ifl. All component lookups (D14–D26) use this R25.
+  //   DOL and SD both key on LINE current (Ifl) for the initial lookup.
   const ratedA = (mode === 'sd')
-    ? ratedCurrentCeiling(Ifl, SD_RATED_TABLE)   // use Ifl, not Iwork
-    : ratedCurrentCeiling(Ifl, DOL_RATED_TABLE);
+    ? dynamicMatchMode(Ifl, SD_RATED_TABLE)   // SD: dynamic match on LINE current (Ifl)
+    : dynamicMatchMode(Ifl, DOL_RATED_TABLE);  // DOL: dynamic match on full-load current (Ifl)
  
   // Display: DOL → single line current; Star-Delta → dual row (line + phase)
   if (mode === 'sd') {
@@ -1169,8 +1207,19 @@ function renderBOQ(r, ck) {
         </tr>
         <!-- ── Price disclaimer footer ──────────────────────────────── -->
         <tr>
-          <td colspan="6" style="text-align:center;font-size:11px;color:var(--red);padding:10px 8px 6px;border-top:1px solid var(--border2);letter-spacing:0.03em;">
+          <td colspan="6" style="text-align:center;font-size:11px;color:var(--red);padding:10px 8px 4px;border-top:1px solid var(--border2);letter-spacing:0.03em;">
             *** ราคา ณ วันที่ 7/5/69 อาจมีการเปลี่ยนแปลง ***
+          </td>
+        </tr>
+        <!-- ── Engineering standards & liability disclaimer ─────────── -->
+        <tr>
+          <td colspan="6" style="text-align:left;font-size:10.5px;color:var(--text2);padding:4px 10px 3px;line-height:1.6;opacity:0.82;">
+            *อ้างอิงมาตรฐานการติดตั้งทางไฟฟ้าสำหรับประเทศไทย พ.ศ. 2564
+          </td>
+        </tr>
+        <tr>
+          <td colspan="6" style="text-align:left;font-size:10.5px;color:var(--text2);padding:2px 10px 8px;line-height:1.6;opacity:0.82;">
+            *หมายเหตุ การคำนวณนี้เป็นเพียงการคำนวณโดยโปรแกรม ผู้ใช้งานควรมีวิศวกรรับรองผลการคำนวณก่อนนำไปใช้งานจริง
           </td>
         </tr>
  
