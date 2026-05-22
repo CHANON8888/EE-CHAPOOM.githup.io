@@ -34,15 +34,63 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
                     radial-gradient(circle at 80% 85%, rgba(124,58,237,0.06) 0%, transparent 50%); }
 .wrap { position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:24px 18px; }
  
-/* TOP */
-.topbar { display:flex; align-items:center; gap:14px; background:var(--s1); border:1px solid var(--border); border-radius:14px; padding:16px 22px; margin-bottom:20px; box-shadow:0 1px 3px rgba(15,23,42,0.04); }
-.ticon { width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg,#2563eb,#7c3aed); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 6px 18px -4px rgba(37,99,235,0.4); color:#fff; }
-.topbar h1 { font-size:21px; font-weight:800; letter-spacing:-0.5px; }
-.topbar p { font-size:12px; color:var(--text2); margin-top:2px; }
-.tags { margin-left:auto; display:flex; gap:8px; }
-.tag { font-size:10.5px; font-weight:700; padding:4px 11px; border-radius:20px; letter-spacing:0.5px; }
-.tag.blue { background:var(--accent-dim); border:1px solid rgba(59,130,246,0.3); color:var(--accent); }
-.tag.green { background:var(--green-dim); border:1px solid rgba(16,185,129,0.3); color:var(--green); }
+/* TOP — Hero header (large title with gradient accent + subtitle) */
+.topbar {
+  display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:30px 36px;
+  margin-bottom:22px;
+  box-shadow:0 2px 8px -2px rgba(15,23,42,0.05);
+  position:relative; overflow:hidden;
+}
+.topbar::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(600px 200px at 90% -20%, rgba(37,99,235,0.06), transparent 70%),
+    radial-gradient(500px 180px at -10% 120%, rgba(5,150,105,0.05), transparent 70%);
+}
+.brand { flex:1 1 280px; min-width:0; position:relative; z-index:1; }
+.brand-title {
+  margin:0;
+  font-size:clamp(26px, 4.2vw, 44px);
+  font-weight:800;
+  letter-spacing:-1.2px;
+  line-height:1.1;
+  color:var(--text);
+}
+.brand-title .accent {
+  background:linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #059669 100%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; color:transparent;
+}
+.brand-subtitle {
+  margin:10px 0 0;
+  font-size:14px;
+  color:var(--text2);
+  font-weight:400;
+  letter-spacing:0.1px;
+}
+.tags { display:flex; gap:8px; flex-wrap:wrap; position:relative; z-index:1; }
+.tag {
+  font-size:11px; font-weight:700;
+  padding:6px 14px; border-radius:999px;
+  letter-spacing:0.6px;
+}
+.tag.blue { background:var(--accent-dim); border:1px solid rgba(37,99,235,0.30); color:var(--accent); }
+.tag.green { background:var(--green-dim); border:1px solid rgba(5,150,105,0.30); color:var(--green); }
+
+/* Hero on mobile — keep title readable, subtitle wraps nicely */
+@media (max-width:640px) {
+  .topbar { padding:22px 22px; gap:14px; border-radius:14px; }
+  .brand-title { font-size:clamp(22px, 6.5vw, 32px); letter-spacing:-0.8px; }
+  .brand-subtitle { font-size:12.5px; margin-top:7px; }
+}
+@media (max-width:380px) {
+  .topbar { padding:18px 18px; }
+  .brand-title { font-size:21px; letter-spacing:-0.5px; }
+}
  
 /* GRID */
 .grid { display:grid; grid-template-columns:350px 1fr; gap:18px; }
@@ -349,9 +397,8 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 <div class="wrap">
  
 <div class="topbar">
-  <div class="ticon">⚡</div>
-  <div>
-    <h1>Automatic Motor Starter Calculation</h1>
+  <div class="brand">
+    <h1 class="brand-title">Automatic Motor Starter <span class="accent">Calculation</span></h1>
   </div>
   <div class="tags">
     <span class="tag blue">DOL</span>
