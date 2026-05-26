@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Automatic Motor Starter Calculation</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600
-&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #f4f7fb;
@@ -76,8 +75,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
   0%,100% { background-position:0% 50%; }
   50%     { background-position:100% 50%; }
 }
-/* Legacy ticon rule kept harmless (element removed from HTML) */
-.ticon { display:none; }
+.ticon { display:none; } /* old icon removed */
 .topbar p { font-size:12px; color:var(--text2); margin-top:2px; }
 
 @media (max-width:640px) {
@@ -280,6 +278,25 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 .pcard .pv { font-family:'IBM Plex Mono',monospace; font-size:17px; font-weight:700; color:var(--text); }
 .pcard .pv.err { font-size:11px; color:var(--red); }
 .pcard .ps { font-size:10px; color:var(--text3); margin-top:3px; }
+.pcard .pvd {
+  display:inline-flex; align-items:center; gap:4px;
+  margin-top:7px; padding:3px 8px;
+  border-radius:6px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px; font-weight:700;
+  background:rgba(15,23,42,0.04);
+  border:1px solid var(--border);
+  color:var(--text2);
+}
+.pcard .pvd::before {
+  content:'VD'; font-size:8.5px; font-weight:800;
+  letter-spacing:0.4px; opacity:0.7;
+  font-family:'Sarabun',sans-serif;
+}
+.pcard .pvd.vd-ok   { background:rgba(5,150,105,0.10);  border-color:rgba(5,150,105,0.30);  color:var(--green); }
+.pcard .pvd.vd-warn { background:rgba(217,119,6,0.10);  border-color:rgba(217,119,6,0.32);  color:var(--yellow); }
+.pcard .pvd.vd-bad  { background:rgba(220,38,38,0.10);  border-color:rgba(220,38,38,0.32);  color:var(--red); }
+.pcard .pvd.vd-na   { font-style:italic; opacity:0.6; }
 .pcard .psel { font-size:9px; font-weight:700; color:var(--accent); margin-top:3px; display:none; }
 .pcard.sel .psel { display:block; }
 .pcard .cheap { position:absolute;top:7px;right:7px;background:var(--green);color:#fff;font-size:8px;font-weight:800;padding:2px 5px;border-radius:3px;display:none; }
@@ -310,6 +327,11 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 .rsec td { background:var(--s2);padding:5px 13px; }
 .row-sel td { background:rgba(37,99,235,0.07); }
 .row-sel:hover td { background:rgba(37,99,235,0.12) !important; }
+/* Voltage Drop sub-rows in renderComps */
+.vd-row td { font-size:10.5px; color:var(--text2); padding:1px 8px 4px; opacity:0.82; border-bottom:none; }
+.vd-row.vd-sel td { background:rgba(37,99,235,0.04); }
+.vd-lbl { font-style:italic; }
+.vd-val { text-align:right; font-weight:600; color:var(--accent); opacity:1; }
 .rslbl { font-size:9.5px;font-weight:800;letter-spacing:1.5px;color:var(--yellow);text-transform:uppercase; }
  
 .boqt { width:100%;border-collapse:collapse;font-size:12px; }
@@ -527,13 +549,14 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
   <div class="card">
     <div class="chead">
       <div class="ic" style="background:rgba(16,185,129,0.15)">💰</div>
-      <h2>สรุปราคาสายและท่อ (บาท) — เปรียบเทียบทุกประเภท</h2>
+      <h2>สรุปเปรียบเทียบราคาสายและท่อ (บาท) </h2>
     </div>
     <div class="pcards">
       <div class="pcard c-vct" id="pc-vct" onclick="pickCable('vct')">
         <div class="pt">VCT3/C-G</div>
         <div class="pv err" id="pv-vct">—</div>
         <div class="ps">สายและท่อ VCT</div>
+        <div class="pvd vd-na" id="pvd-vct">—</div>
         <div class="psel">เลือก BOQ</div>
         <div class="pcard-tick">✓ เลือกแล้ว</div>
         <div class="cheap">ถูกสุด</div>
@@ -542,6 +565,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
         <div class="pt">CV+THW(G)</div>
         <div class="pv" id="pv-cv">—</div>
         <div class="ps">สายและท่อ CV</div>
+        <div class="pvd vd-na" id="pvd-cv">—</div>
         <div class="psel">เลือก BOQ</div>
         <div class="pcard-tick">✓ เลือกแล้ว</div>
         <div class="cheap">ถูกสุด</div>
@@ -550,6 +574,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
         <div class="pt">NYY3/C-G</div>
         <div class="pv" id="pv-nyy">—</div>
         <div class="ps">สายและท่อ NYY</div>
+        <div class="pvd vd-na" id="pvd-nyy">—</div>
         <div class="psel">เลือก BOQ</div>
         <div class="pcard-tick">✓ เลือกแล้ว</div>
         <div class="cheap">ถูกสุด</div>
@@ -558,6 +583,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
         <div class="pt">THW</div>
         <div class="pv" id="pv-thw">—</div>
         <div class="ps">สายและท่อ THW</div>
+        <div class="pvd vd-na" id="pvd-thw">—</div>
         <div class="psel">เลือก BOQ</div>
         <div class="pcard-tick">✓ เลือกแล้ว</div>
         <div class="cheap">ถูกสุด</div>
@@ -689,7 +715,63 @@ const DOL_RATED_TABLE = [
 ];
  
 // =====================================================================
-// EXCEL XLOOKUP EQUIVALENTS — Dynamic match_mode via R20/R21/R22/R25
+// VOLTAGE DROP LOOKUP TABLES
+// Source: VD sheet, หน้าหลักใช้งาน D20/D23/D26/D29
+// Formula: VD% = (VD_factor * I * dist_m * 1e-3 * 100) / V
+//   DOL:  I = Ifl (line current)
+//   SD:   I = Ifl / √3 (phase current)
+// VD_factor unit: mΩ/m  (resistance per metre at rated current, from มาตรฐาน ฐ.1-ฐ.4)
+//
+// Each object maps cable-size string → VD_factor number.
+// The key must exactly match the size string stored in cables.vct/cv/nyy/thw.
+ 
+const VD = {
+  vct: {
+    dol: {'3x2.5/2.5':15,'3x4/4':9.5,'3x6/6':6.4,'3x10/10':3.8,'3x16/16':2.4,'3x25/16':1.5,'3x35/16':1.1},
+    sd:  {'2(3x2.5/2.5)':15,'2(3x4/4)':9.5,'2(3x6/6)':6.4,'2(3x10/10)':3.8,'2(3x16/16)':2.4,'2(3x25/16)':1.5,'2(3x35/16)':1.1}
+  },
+  cv: {
+    dol: {'3x2.5/2.5':16,'3x4/2.5':10,'3x6/4':6.8,'3x10/4':4,'3x16/6':2.5,'3x25/6':1.6,'3x35/10':1.15,
+          '3x50/10':0.86,'3x70/16':0.6,'3x95/16':0.44,'2(3x50)/16':0.86,'2(3x70)/25':0.6,
+          '3(3x50)/25':0.86,'3(3x70)/25':0.6,'3(3x95)/35':0.44,'3(3x150)/50':0.31,'3(3x185)/50':0.25,'3(3x240)/50':0.22},
+    sd:  {'2(3x2.5)/2.5':16,'2(3x2.5)/4':16,'2(3x4)/4':10,'2(3x6)/6':6.8,'2(3x10)/6':4,'2(3x16)/10':2.5,
+          '2(3x25)/10':1.6,'2(3x35)/16':1.15,'2(3x50)/16':0.86,'2(3x70)/16':0.6,'2(3x95)/25':0.44,
+          '2(3x150)/25':0.31,'4(3x50)/25':0.86,'4(3x70)/35':0.6,'4(3x95)/50':0.44,'4(3x120)/50':0.36,
+          '4(3x150)/50':0.31,'4(3x185)/70':0.25,'2(3x16)/6':2.5}
+  },
+  nyy: {
+    dol: {'3x2.5/2.5':15,'3x4/4':9.5,'3x6/6':6.4,'3x10/10':3.8,'3x16/16':2.4,'3x25/16':1.5,'3x35/16':1.1,
+          '3x50/25':0.8,'3x70/35':0.57,'3x120/70':0.36,'2(3x50/25)':0.8,'3(3x50/25)':0.8,'4(3x50/25)':0.8,
+          '4(3x70/35)':0.57,'4(3x95/50)':0.43,'4(3x120/70)':0.36,'4(3x185/95)':0.25,'4(3x240/120)':0.21,'4(3x300/150)':0.18},
+    sd:  {'2(3x2.5/2.5)':15,'2(3x4/4)':9.5,'2(3x6/6)':6.4,'2(3x10/10)':3.8,'2(3x16/16)':2.4,'2(3x25/16)':1.5,
+          '2(3x35/16)':1.1,'2(3x50/25)':0.8,'2x(3x35/16)':1.1,'2x(3x50/25)':0.8,'2x(3x70/35)':0.57,
+          '2x(3x95/50)':0.43,'2x(3x120/70)':0.36,'2x(3x185/95)':0.25,'2x(3x240/120)':0.21,
+          '4(3x95/50)':0.43,'4(3x150/95)':0.29,'4(3x185/95)':0.25,'4(3x240/120)':0.21}
+  },
+  thw: {
+    dol: {'3x2.5/2.5':15,'3x4/2.5':9.5,'3x6/2.5':6.4,'3x10/4':3.8,'3x16/4':2.4,'3x25/6':1.52,'3x35/6':1.13,
+          '3x50/10':0.85,'3x70/10':0.61,'3x95/16':0.48,'2(3x50)/16':0.85,'2(3x70)/16':0.61,'2(3x70)/25':0.61,
+          '2(3x95)/25':0.48,'3(3x95)/25':0.48,'3(3x120)/35':0.4,'3(3x185)/50':0.3,'3(3x240)/50':0.25,'3(3x300)/50':0.23},
+    sd:  {'6x2.5/2.5':15,'6x4/4':9.5,'6x6/4':6.4,'6x10/4':3.8,'6x10/6':3.8,'6x25/6':1.52,'6x25/10':1.52,
+          '6x35/10':1.13,'6x50/16':0.85,'6x70/16':0.61,'6x95/16':0.48,'6x120/25':0.4,'6x185/25':0.31,
+          '12x70/25':0.57,'12x70/35':0.57,'12x95/35':0.44,'12x120/50':0.35,'12x150/50':0.3,'12x185/50':0.26,'12x300/70':0.18}
+  }
+};
+ 
+// Compute VD% for one cable type.
+// mode: 'STAR-DELTA' uses phase current (Ifl/√3); DOL uses line current (Ifl).
+// Returns null if the cable size isn't in the VD table.
+function calcVD(cableType, cableSize, Ifl, dist, V, mode) {
+  const modeKey = (mode === 'STAR-DELTA') ? 'sd' : 'dol';
+  const tbl = VD[cableType]?.[modeKey];
+  if (!tbl || !cableSize) return null;
+  const factor = tbl[cableSize];
+  if (factor == null) return null;
+  const I = (mode === 'STAR-DELTA') ? Ifl / Math.sqrt(3) : Ifl;
+  return (factor * I * dist * 1e-3 * 100) / V;
+}
+ 
+ 
 //
 // หน้าหลักใช้งาน helper cells:
 //   R20 = XLOOKUP(D13, DOL!C5:C38, DOL!C5:C38, "", +1) → ceiling standard current
@@ -840,26 +922,10 @@ function calculate() {
     ? dynamicMatchMode(Ifl, SD_RATED_TABLE)   // SD: dynamic match on LINE current (Ifl)
     : dynamicMatchMode(Ifl, DOL_RATED_TABLE);  // DOL: dynamic match on full-load current (Ifl)
  
-  // Display: DOL → single line current; Star-Delta → dual row (line + phase)
-  if (mode === 'sd') {
-    document.getElementById('curbox').innerHTML = `
-      <div class="cl">🔌 กระแสมอเตอร์ (Full Load Current)</div>
-      <div class="cur-dual">
-        <div class="cur-row">
-          <div class="cur-lbl">กระแสเต็มพิกัด <span>(Line Current)</span></div>
-          <div class="vrow"><span class="big">${Ifl.toFixed(2)}</span><span class="u2">A</span></div>
-        </div>
-        <div class="cur-divider"></div>
-        <div class="cur-row">
-          <div class="cur-lbl">กระแสเฟส <span>(Phase Current = Ifl ÷ √3)</span></div>
-          <div class="vrow"><span class="big" style="font-size:20px">${Iwork.toFixed(2)}</span><span class="u2">A</span></div>
-        </div>
-      </div>`;
-  } else {
-    document.getElementById('curbox').innerHTML = `
-      <div class="cl">🔌 กระแสเต็มพิกัด (Full Load Current)</div>
-      <div class="vrow"><span class="big" id="cur">${Ifl.toFixed(2)}</span><span class="u2">A</span></div>`;
-  }
+  // Display: line current only (phase-current row removed per user request)
+  document.getElementById('curbox').innerHTML = `
+    <div class="cl">🔌 กระแสเต็มพิกัด (Full Load Current)</div>
+    <div class="vrow"><span class="big" id="cur">${Ifl.toFixed(2)}</span><span class="u2">A</span></div>`;
  
   let r, comps, cables, conds;
   if (mode==='sd') {
@@ -881,8 +947,9 @@ function calculate() {
     ];
     cables  = {vct:{s:row[13],p:row[14]}, cv:{s:row[15],p:row[16]}, nyy:{s:row[17],p:row[18]}, thw:{s:row[19],p:row[20]}};
     conds   = {vct:{s:row[21],p:row[22]}, cv:{s:row[23],p:row[24]}, nyy:{s:row[25],p:row[26]}, thw:{s:row[27],p:row[28]}};
-    // Star-Delta: Iwork = Ifl/√3 is the phase current shown on UI; ratedA derived from Ifl directly.
-    r = {mode:'STAR-DELTA', kw, dist, V, pf, eff, Ifl, Iwork, ratedA, hp:row[1], A:row[2], comps, cables, conds, rawRow:row, olt};
+    const vds_sd = {};
+    ['vct','cv','nyy','thw'].forEach(k => { vds_sd[k] = calcVD(k, cables[k].s, Ifl, dist, V, 'STAR-DELTA'); });
+    r = {mode:'STAR-DELTA', kw, dist, V, pf, eff, Ifl, Iwork, ratedA, hp:row[1], A:row[2], comps, cables, conds, vd:vds_sd, rawRow:row, olt};
   } else {
     const row = lookupByA(DOL, ratedA);
     // Thermal validation
@@ -899,7 +966,9 @@ function calculate() {
     ];
     cables  = {vct:{s:row[9],p:row[10]}, cv:{s:row[11],p:row[12]}, nyy:{s:row[13],p:row[14]}, thw:{s:row[15],p:row[16]}};
     conds   = {vct:{s:row[17],p:row[18]}, cv:{s:row[19],p:row[20]}, nyy:{s:row[21],p:row[22]}, thw:{s:row[23],p:row[24]}};
-    r = {mode:'DOL', kw, dist, V, pf, eff, Ifl, Iwork:Ifl, ratedA, hp:row[1], A:row[2], comps, cables, conds, rawRow:row, olt};
+    const vds_dol = {};
+    ['vct','cv','nyy','thw'].forEach(k => { vds_dol[k] = calcVD(k, cables[k].s, Ifl, dist, V, 'DOL'); });
+    r = {mode:'DOL', kw, dist, V, pf, eff, Ifl, Iwork:Ifl, ratedA, hp:row[1], A:row[2], comps, cables, conds, vd:vds_dol, rawRow:row, olt};
   }
   lastR = r;
  
@@ -920,6 +989,26 @@ function calculate() {
       el.className='pv err';
     }
     else{el.textContent=fmt(prices[k]);el.className='pv';}
+
+    // ── Voltage drop chip (VD%) ─────────────────────────────────
+    const vdEl = document.getElementById('pvd-'+k);
+    if (vdEl) {
+      const vd = r.vd && r.vd[k];
+      if (vd == null || isNaN(vd)) {
+        vdEl.textContent = '—';
+        vdEl.className = 'pvd vd-na';
+      } else {
+        vdEl.textContent = vd.toFixed(2) + '%';
+        // วสท. กำหนด VD ≤ 5% สำหรับมอเตอร์ — แบ่ง 3 ระดับให้เห็นง่าย:
+        //   ≤ 3%  = ดีมาก (เขียว)
+        //   ≤ 5%  = ยอมรับได้ (เหลือง)
+        //   > 5%  = เกินมาตรฐาน (แดง)
+        let cls = 'vd-ok';
+        if (vd > 5)      cls = 'vd-bad';
+        else if (vd > 3) cls = 'vd-warn';
+        vdEl.className = 'pvd ' + cls;
+      }
+    }
   });
   const valid=Object.entries(prices).filter(([,v])=>v!=null);
   if(valid.length){
@@ -940,14 +1029,10 @@ function renderComps(r) {
   // Reusable inline selection badge — appears right after item name in col-1
   const badge = '<span class="sel-badge">✓ เลือก</span>';
  
-  // ── Electrical info rows ──────────────────────────────────────────
-  const iworkRow = r.mode==='STAR-DELTA'
-    ? `<tr><td class="rn">กระแสเฟส</td><td class="rm">${r.Iwork.toFixed(4)}</td><td class="ru">A</td><td></td></tr>`
-    : '';
+  // ── Electrical info rows (phase-current row removed per user request) ─
   const crow=`
     <tr class="rsec"><td colspan="4"><span class="rslbl">ค่าไฟฟ้า</span></td></tr>
     <tr><td class="rn">กระแสเต็มพิกัด</td><td class="rm">${r.Ifl.toFixed(4)}</td><td class="ru">A</td><td></td></tr>
-    ${iworkRow}
     <tr><td class="rn">พิกัดมาตรฐาน</td><td class="rm">${r.ratedA}</td><td class="ru">A</td><td></td></tr>`;
  
   // ── Non-overload starter components (contactors, timer) ──────────
@@ -993,12 +1078,16 @@ function renderComps(r) {
     const hasVal = d.p != null;
     // Task 1: VCT with no price → cable capacity exceeded, show Thai message in red
     const errTxt = (k === 'vct') ? 'ขนาดสายไม่รองรับ' : '#VALUE!';
+    const vdVal  = r.vd?.[k];
+    const vdStr  = vdVal != null
+      ? `<tr class="vd-row${isSel?' vd-sel':''}"><td colspan="3" class="vd-lbl">Voltage Drop</td><td class="vd-val">${vdVal.toFixed(2)}%</td></tr>`
+      : '';
     return `<tr${isSel ? ' class="row-sel"' : ''}>
       <td class="rn">${label}${isSel ? badge : ''}</td>
       <td class="rm">${formatInchSize(d.s)}</td>
       <td class="ru">${unit}</td>
       <td class="rp ${!hasVal?'err':''}">${hasVal ? fmt(d.p) : errTxt}</td>
-    </tr>`;
+    </tr>${vdStr}`;
   }).join('');
  
   // ── Conduit rows — badge on whichever matches selCable ───────────
