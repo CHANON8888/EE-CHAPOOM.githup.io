@@ -549,7 +549,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
   <div class="card">
     <div class="chead">
       <div class="ic" style="background:rgba(16,185,129,0.15)">💰</div>
-      <h2>สรุปเปรียบเทียบราคาสายและท่อ (บาท) </h2>
+      <h2>สรุปราคาสายและท่อ (บาท) — เปรียบเทียบทุกประเภท</h2>
     </div>
     <div class="pcards">
       <div class="pcard c-vct" id="pc-vct" onclick="pickCable('vct')">
@@ -612,7 +612,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
   <div class="card">
     <div class="chead">
       <div class="ic" style="background:rgba(245,158,11,0.15)">📄</div>
-      <h2>BOQ (Bill of Quantity)</h2>
+      <h2>BOQ — Bill of Quantity</h2>
     </div>
     <div id="boq-area"><div class="ph">คำนวณก่อนเพื่อดู BOQ</div></div>
   </div>
@@ -1317,37 +1317,237 @@ function renderBOQ(r, ck) {
   </div>`;
 }
  
+// ─────────────────────────────────────────────────────────────────────────────
+// หัวเอกสาร BOQ + รายการมาตรฐานที่บวกเพิ่มในตู้ชุดสตาร์ทเสมอ — แก้ไขได้ตรงนี้
+// (ถ้าไม่ต้องการรายการมาตรฐาน ทำ BOQ_FIXED_ITEMS เป็น [] ได้)
+// ─────────────────────────────────────────────────────────────────────────────
+const BOQ_HEADER = {
+  title:   'Bill of Quantity (BOQ) (เอกสารเปรียบเทียบงานแก้ไขจริง /เพิ่ม-ลด)',
+  company: 'MITR PHOL Bio Power',
+  addr1:   '109 หมู่ 10 ต.หนองมะค่าโมง',
+  addr2:   'อ.ด่านช้าง จ.สุพรรณบุรี 72180',
+  tel:     'Tel.035-419114',
+  fax:     'Fax.035-548653',
+  project: 'งานติดตั้งชุดสตาร์ทมอเตอร์',
+  owner:   'บริษัท มิตรผล ไบโอ-เพาเวอร์ (ด่านช้าง) จำกัด',
+  bidder:  'ราคากลาง',
+  job:     'งานติดตั้งชุดสตาร์ทมอเตอร์',
+  rev:     'Rev.0'
+};
+const BOQ_FIXED_ITEMS = [
+  // (ลูกลอยไฟฟ้าถูกเอาออกแล้ว — ถ้าต้องการเพิ่มรายการมาตรฐานกลับมา ใส่ที่นี่)
+];
+
 // ── copyBOQ ──────────────────────────────────────────────────────────────────
-// Copies the BOQ table as TSV (Tab-Separated Values).
-// TSV is the format Excel's clipboard listener interprets as a grid:
-// each <tab> → new column, each newline → new row.
-// We read textContent (strips all HTML tags) so the clipboard receives
-// clean text with no hidden characters or Unicode icons.
+// Copies the FULL BOQ as a rich HTML <table> (merged header cells + colours),
+// so pasting into a BLANK Excel sheet reproduces the company form 1:1.
+// HTML-table paste handles merged cells reliably (plain TSV does not — that is
+// why the Total / Total Item rows used to shift). A plain-text TSV is also put
+// on the clipboard as a fallback for apps that can't take HTML.
 function copyBOQ() {
-  const tbl = document.getElementById('boq-table');
-  if (!tbl) return;
- 
-  const rows = Array.from(tbl.querySelectorAll('tr'));
-  const tsv  = rows.map(row => {
-    const cells = Array.from(row.querySelectorAll('th, td'));
-    const parts = [];
-    cells.forEach(cell => {
-      const span = parseInt(cell.getAttribute('colspan') || '1', 10);
-      const text = cell.textContent.trim().replace(/\t/g, ' ').replace(/\n/g, ' ');
-      parts.push(text);
-      // Pad colspan so columns stay aligned in Excel
-      for (let i = 1; i < span; i++) parts.push('');
-    });
-    return parts.join('\t');
-  }).join('\n');
- 
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(tsv)
-      .then(() => flashBtn(true))
-      .catch(()  => fallbackCopy(tsv));
-  } else {
-    fallbackCopy(tsv);
+  const r = lastR;
+  if (!r) { flashBtn(false); return; }
+  const ck    = selCable;
+  const names = { vct:'VCT3/C-G', cv:'CV3/C+THW(G)', nyy:'NYY3/C-G', thw:'THW' };
+  const cab   = r.cables[ck];
+  const cond  = r.conds[ck];
+  const H     = BOQ_HEADER;
+
+  // ── amounts ────────────────────────────────────────────────────────────────
+  const cabT     = cab.p  != null ? cab.p  * r.dist : null;
+  const conT     = cond.p != null ? cond.p * r.dist : null;
+  const fixedSub = BOQ_FIXED_ITEMS.reduce((s, it) => s + (it.price || 0) * (it.qty || 1), 0);
+  const compSub  = r.comps.reduce((s, c) => s + (c.price || 0), 0) + fixedSub;
+  const ccsub    = (cabT != null && conT != null) ? cabT + conT : null;
+  const grand    = ccsub != null ? compSub + ccsub : null;
+  const safe5    = grand != null ? Math.round(grand * 0.05) : null;
+  const safe10   = grand != null ? Math.round(grand * 0.10) : null;
+  const grandT   = grand != null ? Math.round(grand * 1.20) : null;
+  const condLbl  = conduitLabel(cond.s, r.mode);
+  const d = new Date();
+  const dateStr = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+
+  const c = n => (n == null || isNaN(n)) ? '-'
+    : Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // ── styles ── (DilleniaUPC 12pt, ไม่หนา, จัดกึ่งกลางทุกช่อง)
+  const FONT='font-family:DilleniaUPC,\'Angsana New\',\'Cordia New\',serif;font-size:12pt;font-weight:normal;';
+  const BD='border:1px solid #000;padding:2px 5px;'+FONT+'vertical-align:middle;text-align:center;';
+  const L='text-align:left;', R='', C='text-align:center;', BL='';
+  const GQ='background:#C6E0B4;', PQ='background:#E6B9DD;', UN='background:#D9D9D9;', GY='background:#D9D9D9;', YE='background:#FFFF00;';
+  const GG='background:#70AD47;color:#000;', GB='background:#5B9BD5;color:#000;', GYb='background:#FFFF00;color:#000;';
+  const cell    = (v, st='') => `<td style="${BD}${st}">${esc(v)}</td>`;
+  const numCell = (v, st='') => `<td style="${BD}${R}${st}">${esc(v)}</td>`;
+  const empt    = (n, st='') => { let s=''; for (let i=0;i<n;i++) s+=`<td style="${BD}${st}"></td>`; return s; };
+  // tail after BOQ-TOTAL: Actual(5) + Conclusion(2, yellow) + REMARK(1)
+  const tail = (st='') => empt(5, st) + `<td style="${BD}${YE}"></td><td style="${BD}${YE}"></td><td style="${BD}${st}"></td>`;
+
+  const T = [];
+  T.push('<table border="1" style="border-collapse:collapse;">');
+
+  // ── Title ──
+  T.push(`<tr><td colspan="18" style="border:none;${C}color:#000;${FONT}">${esc(H.title)}</td></tr>`);
+
+  // ── Company + project metadata (logo cell spans 4 rows) ──
+  T.push('<tr>'
+    + `<td rowspan="4" style="${BD}${C}color:#000;">${esc(H.company)}</td>`
+    + `<td colspan="4" style="${BD}">${esc(H.addr1)}</td>`
+    + `<td style="${BD}">PROJECT :</td><td colspan="7" style="${BD}">${esc(H.project)}</td>`
+    + `<td colspan="3" style="${BD}${BL}">BILL OF QUANTITIES</td><td colspan="2" style="${BD}">PAGE</td>`
+    + '</tr>');
+  T.push('<tr>'
+    + `<td colspan="4" style="${BD}">${esc(H.addr2)}</td>`
+    + `<td style="${BD}">OWNER :</td><td colspan="7" style="${BD}">${esc(H.owner)}</td>`
+    + `<td colspan="2" style="${BD}">DATE</td><td style="${BD}${C}">${esc(dateStr)}</td><td colspan="2" style="${BD}">BILL NO.</td>`
+    + '</tr>');
+  T.push('<tr>'
+    + `<td colspan="4" style="${BD}">${esc(H.tel)}</td>`
+    + `<td style="${BD}">BIDDER' NAME :</td><td colspan="7" style="${BD}">${esc(H.bidder)}</td>`
+    + `<td colspan="3" style="${BD}">PR No. :</td><td colspan="2" style="${BD}${C}color:#000;">${esc(H.rev)}</td>`
+    + '</tr>');
+  T.push('<tr>'
+    + `<td colspan="4" style="${BD}">${esc(H.fax)}</td>`
+    + `<td style="${BD}">JOB :</td><td colspan="7" style="${BD}">${esc(H.job)}</td>`
+    + `<td colspan="3" style="${BD}">IO :</td><td colspan="2" style="${BD}"></td>`
+    + '</tr>');
+
+  // ── Column header (3 stacked rows, mirrors the merged Excel cells) ──
+  T.push('<tr>'
+    + `<td rowspan="3" style="${BD}${C}${BL}">ITEM</td>`
+    + `<td rowspan="3" style="${BD}${C}${BL}">DESCRIPTION</td>`
+    + `<td rowspan="3" style="${BD}${C}${BL}${GQ}">BOQ<br>QUANTITY</td>`
+    + `<td rowspan="3" style="${BD}${C}${BL}${PQ}">Actual<br>QUANTITY</td>`
+    + `<td rowspan="3" style="${BD}${C}${BL}${UN}">UNIT</td>`
+    + `<td colspan="5" style="${BD}${C}${GG}">BOQ</td>`
+    + `<td colspan="5" style="${BD}${C}${GB}">Actual</td>`
+    + `<td colspan="2" style="${BD}${C}${GYb}">Conclusion</td>`
+    + `<td rowspan="3" style="${BD}${C}${BL}${YE}">REMARK</td>`
+    + '</tr>');
+  T.push('<tr>'
+    + `<td colspan="2" style="${BD}${C}${GG}">MATERIAL</td><td colspan="2" style="${BD}${C}${GG}">LABOUR</td>`
+    + `<td rowspan="2" style="${BD}${C}${GG}">TOTAL<br>(BHT)</td>`
+    + `<td colspan="2" style="${BD}${C}${GB}">MATERIAL</td><td colspan="2" style="${BD}${C}${GB}">LABOUR</td>`
+    + `<td rowspan="2" style="${BD}${C}${GB}">TOTAL<br>(BHT)</td>`
+    + `<td style="${BD}${C}${GYb}">Added<br>TOTAL</td><td style="${BD}${C}${GYb}">Reduced<br>TOTAL</td>`
+    + '</tr>');
+  T.push('<tr>'
+    + `<td style="${BD}${C}${GG}">UNIT PRICE @</td><td style="${BD}${C}${GG}">AMOUNT (BHT)</td>`
+    + `<td style="${BD}${C}${GG}">UNIT PRICE @</td><td style="${BD}${C}${GG}">AMOUNT (BHT)</td>`
+    + `<td style="${BD}${C}${GB}">UNIT PRICE @</td><td style="${BD}${C}${GB}">AMOUNT (BHT)</td>`
+    + `<td style="${BD}${C}${GB}">UNIT PRICE @</td><td style="${BD}${C}${GB}">AMOUNT (BHT)</td>`
+    + `<td style="${BD}${C}${GYb}">(BHT)</td><td style="${BD}${C}${GYb}">(BHT)</td>`
+    + '</tr>');
+
+  // ── Body row helpers ──
+  const rowSection = (item, label) => '<tr>'
+    + cell(item, C) + cell(label, L)
+    + `<td style="${BD}${GQ}"></td><td style="${BD}${PQ}"></td><td style="${BD}${UN}"></td>`
+    + empt(5) + tail() + '</tr>';
+  const rowItem = (desc, qty, unit, u, amt, tot) => '<tr>'
+    + cell('', C) + cell(desc, L)
+    + cell(qty, GQ+C) + `<td style="${BD}${PQ}"></td>` + cell(unit, UN+C)
+    + numCell(u) + numCell(amt) + numCell('') + numCell('') + numCell(tot)
+    + tail() + '</tr>';
+  const rowAddon = (label, pct, amt) => '<tr>'
+    + cell('', C) + cell(label, L)
+    + cell(pct, GQ+C) + `<td style="${BD}${PQ}"></td>` + cell('%', UN+C)
+    + numCell('') + numCell(amt) + numCell('-') + numCell('') + numCell(amt)
+    + tail() + '</tr>';
+  // NOTE: no colspan in body rows — every row has exactly 18 <td> so columns
+  // never shift when pasted into Excel (the gray Total rows used to shift).
+  const rowGray = (label, qty, unit, amt) => '<tr>'
+    + cell('', GY+C) + cell(label, GY+L)
+    + cell(qty, GY+C) + `<td style="${BD}${GY}"></td>` + cell(unit, GY+C)
+    + numCell('', GY) + numCell(amt, GY) + numCell('', GY) + numCell('0.0', GY) + numCell(amt, GY)
+    + tail(GY) + '</tr>';
+  const blank = () => '<tr>' + empt(18) + '</tr>';
+
+  // ── Body ──
+  T.push(rowSection('', 'งานติดตั้งชุดสตาร์ทมอเตอร์'));
+  T.push(rowSection('1', 'ตู้ชุดสตาร์ท'));
+  r.comps.forEach(comp => {
+    const desc = (comp.model && comp.model !== '-') ? comp.name + ' ' + comp.model : comp.name;
+    const p = comp.price || 0;
+    T.push(rowItem(desc, '1', 'EA', c(p), c(p), c(p)));
+  });
+  BOQ_FIXED_ITEMS.forEach(it => {
+    const amt = (it.price || 0) * (it.qty || 1);
+    T.push(rowItem(it.desc, String(it.qty || 1), it.unit || 'EA', c(it.price), c(amt), c(amt)));
+  });
+  T.push(blank());
+  T.push(rowSection('2', 'งานพาดสายและงานเดินสาย'));
+  T.push(rowItem(names[ck] + (cab.s ? '  ' + cab.s : ''),  String(r.dist), 'M', c(cab.p),  c(cabT), c(cabT)));
+  T.push(rowItem(condLbl + (cond.s ? '  ' + formatInchSize(cond.s) : ''), String(r.dist), 'M', c(cond.p), c(conT), c(conT)));
+  T.push(blank());
+  T.push(rowGray('Total Item', '1.0', 'Job', c(grand)));
+  T.push(blank());
+  T.push(rowAddon('Safety equipment',   '5%',  c(safe5)));
+  T.push(rowAddon('Miscellaneous work', '5%',  c(safe5)));
+  T.push(rowAddon('Overhead & Profit',  '10%', c(safe10)));
+  T.push(blank());
+  T.push(rowGray('Total', '1.0', 'Job', c(grandT)));
+  T.push('</table>');
+  const html = T.join('');
+
+  // ── Plain-text TSV fallback (same 18-column body) ──
+  const COLS = 18;
+  const mk = (m) => { const a = new Array(COLS).fill(''); for (const k in m) a[k] = m[k]; return a; };
+  const rows = [];
+  rows.push(mk({ 1: 'งานติดตั้งชุดสตาร์ทมอเตอร์' }));
+  rows.push(mk({ 0: '1', 1: 'ตู้ชุดสตาร์ท' }));
+  r.comps.forEach(comp => {
+    const desc = (comp.model && comp.model !== '-') ? comp.name + ' ' + comp.model : comp.name;
+    const p = comp.price || 0;
+    rows.push(mk({ 1: desc, 2: '1', 4: 'EA', 5: c(p), 6: c(p), 9: c(p) }));
+  });
+  BOQ_FIXED_ITEMS.forEach(it => {
+    const amt = (it.price || 0) * (it.qty || 1);
+    rows.push(mk({ 1: it.desc, 2: String(it.qty || 1), 4: it.unit || 'EA', 5: c(it.price), 6: c(amt), 9: c(amt) }));
+  });
+  rows.push(mk({}));
+  rows.push(mk({ 0: '2', 1: 'งานพาดสายและงานเดินสาย' }));
+  rows.push(mk({ 1: names[ck] + (cab.s ? '  ' + cab.s : ''), 2: String(r.dist), 4: 'M', 5: c(cab.p), 6: c(cabT), 9: c(cabT) }));
+  rows.push(mk({ 1: condLbl + (cond.s ? '  ' + formatInchSize(cond.s) : ''), 2: String(r.dist), 4: 'M', 5: c(cond.p), 6: c(conT), 9: c(conT) }));
+  rows.push(mk({}));
+  rows.push(mk({ 1: 'Total Item', 2: '1.0', 4: 'Job', 6: c(grand), 8: '0.0', 9: c(grand) }));
+  rows.push(mk({}));
+  rows.push(mk({ 1: 'Safety equipment',   2: '5%',  4: '%', 6: c(safe5),  8: '-', 9: c(safe5) }));
+  rows.push(mk({ 1: 'Miscellaneous work', 2: '5%',  4: '%', 6: c(safe5),  8: '-', 9: c(safe5) }));
+  rows.push(mk({ 1: 'Overhead & Profit',  2: '10%', 4: '%', 6: c(safe10), 8: '-', 9: c(safe10) }));
+  rows.push(mk({}));
+  rows.push(mk({ 1: 'Total', 2: '1.0', 4: 'Job', 6: c(grandT), 8: '0.0', 9: c(grandT) }));
+  const tsv = rows.map(a => a.map(x => String(x).replace(/\t/g, ' ').replace(/\n/g, ' ')).join('\t')).join('\n');
+
+  // ── write HTML + plain text to the clipboard ──
+  if (navigator.clipboard && window.ClipboardItem) {
+    try {
+      const item = new ClipboardItem({
+        'text/html':  new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([tsv],  { type: 'text/plain' })
+      });
+      navigator.clipboard.write([item]).then(() => flashBtn(true)).catch(() => fallbackCopyHTML(html, tsv));
+      return;
+    } catch (e) { /* fall through */ }
   }
+  fallbackCopyHTML(html, tsv);
+}
+
+// Rich-HTML clipboard fallback: select a hidden contenteditable & execCommand('copy')
+function fallbackCopyHTML(html, tsv) {
+  try {
+    const div = document.createElement('div');
+    div.contentEditable = 'true';
+    div.innerHTML = html;
+    div.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+    document.body.appendChild(div);
+    const range = document.createRange(); range.selectNodeContents(div);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    const ok = document.execCommand('copy');
+    sel.removeAllRanges(); document.body.removeChild(div);
+    if (ok) { flashBtn(true); return; }
+  } catch (e) { /* fall through */ }
+  fallbackCopy(tsv);
 }
  
 function fallbackCopy(text) {
@@ -1366,7 +1566,7 @@ function flashBtn(ok) {
   if (!btn) return;
   btn.classList.remove('ok', 'err');
   if (ok) {
-    btn.textContent = '✅ คัดลอกแล้ว — วางใน Excel ได้เลย';
+    btn.textContent = '✅ คัดลอกแล้ว — วางในชีต Excel เปล่าได้เลย (Ctrl+V)';
     btn.classList.add('ok');
   } else {
     btn.textContent = '❌ Copy ไม่สำเร็จ กรุณาลองใหม่';
