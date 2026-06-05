@@ -27,6 +27,44 @@
   --input: #ffffff;
   --blue-in: rgba(37,99,235,0.06);
 }
+ 
+/* ── Dark mode overrides ─────────────────────────────────────── */
+body.dark {
+  --bg:      #0f1117;
+  --s1:      #1a1d27;
+  --s2:      #21242f;
+  --s3:      #2a2e3d;
+  --border:  #2e3347;
+  --border2: #252839;
+  --accent:  #4d8bff;
+  --accent-dim: rgba(77,139,255,0.15);
+  --green:   #34d399;
+  --green-dim: rgba(52,211,153,0.12);
+  --yellow:  #fbbf24;
+  --red:     #f87171;
+  --purple:  #a78bfa;
+  --cyan:    #22d3ee;
+  --text:    #e8eaf0;
+  --text2:   #9ba3b8;
+  --text3:   #5c6480;
+  --input:   #1e2130;
+  --blue-in: rgba(77,139,255,0.08);
+}
+body.dark .pcard          { background:var(--s1); }
+body.dark .pcard-popover  { background:var(--s2); }
+body.dark .irow select option { background:var(--s2); color:var(--text); }
+body.dark .boq-xl         { color:var(--text); }
+ 
+/* ── Theme toggle button ─────────────────────────────────────── */
+#theme-toggle {
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:5px; padding:5px 12px; border-radius:20px; cursor:pointer;
+  font-size:12px; font-weight:700; letter-spacing:0.04em;
+  border:1.5px solid var(--border2);
+  background:var(--s2); color:var(--text2);
+  transition:all .2s; user-select:none; flex-shrink:0;
+}
+#theme-toggle:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
@@ -77,7 +115,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 }
 .ticon { display:none; } /* old icon removed */
 .topbar p { font-size:12px; color:var(--text2); margin-top:2px; }
-
+ 
 @media (max-width:640px) {
   .topbar { padding:22px 22px; gap:14px; border-radius:14px; }
   .brand-title { font-size:clamp(22px,6.5vw,32px); letter-spacing:-0.8px; }
@@ -264,7 +302,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
  
 /* PRICE CARDS */
 .pcards { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; padding:14px 16px; }
-.pcard { border-radius:9px; padding:13px; border:1.5px solid var(--border); background:#fff; cursor:pointer; transition:all .15s; position:relative; overflow:hidden; }
+.pcard { border-radius:9px; padding:13px; border:1.5px solid var(--border); background:#fff; cursor:pointer; transition:all .15s; position:relative; overflow:visible; }
 .pcard::before { content:''; position:absolute; top:0;left:0;right:0;height:2.5px; }
 .pcard.c-vct::before { background:var(--red); }
 .pcard.c-cv::before  { background:var(--green); }
@@ -335,18 +373,45 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
   padding:3px 9px 4px; border-radius:6px; background:var(--s2); border:1px solid var(--border2); white-space:nowrap; }
 .chip .chip-k { color:var(--text3); font-weight:500; }
 .chip .chip-v { font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--text2); letter-spacing:0.2px; }
-/* Inline cable-selection current appended to the VD chip */
+/* Inline isel appended inside the amp chip: ⚡ Imax | กระแสเลือกสาย: Y A */
 .chip .chip-sep { color:var(--text3); font-weight:400; opacity:0.6; }
 .chip .chip-isel { font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--text2); letter-spacing:0.2px; }
-.chip-amp { background:rgba(8,145,178,0.06); border-color:rgba(8,145,178,0.18); }
+/* chip-amp: contains Imax + Isel — allow wrap so longer text stays readable */
+.chip-amp { background:rgba(8,145,178,0.06); border-color:rgba(8,145,178,0.18); white-space:normal; flex-wrap:wrap; row-gap:2px; }
 .chip-amp .chip-v { color:var(--cyan); }
+/* chip-vd: standalone VD badge — colour-coded */
 .chip-vd.vd-ok   { background:rgba(5,150,105,0.06);  border-color:rgba(5,150,105,0.18); }
 .chip-vd.vd-ok   .chip-v { color:var(--green); }
 .chip-vd.vd-warn { background:rgba(217,119,6,0.07);  border-color:rgba(217,119,6,0.20); }
 .chip-vd.vd-warn .chip-v { color:var(--yellow); }
 .chip-vd.vd-bad  { background:rgba(220,38,38,0.06);  border-color:rgba(220,38,38,0.20); }
 .chip-vd.vd-bad  .chip-v { color:var(--red); }
-/* Conduit name wraps cleanly instead of cramping against the size column */
+/* ── Info button + Pros/Cons popover on pcard ──────────────────── */
+.pcard-info-btn {
+  display:inline-flex; align-items:center; gap:3px;
+  margin-top:7px; padding:2px 7px 3px;
+  font-size:9.5px; font-weight:700; letter-spacing:0.04em;
+  border:1px solid var(--border2); border-radius:5px;
+  background:transparent; color:var(--text3);
+  cursor:pointer; transition:all .15s; user-select:none;
+}
+.pcard-info-btn:hover { background:var(--s3); color:var(--text); border-color:var(--text3); }
+/* Accordion panel — expands in-flow below the button, never clips */
+.pcard-popover {
+  max-height:0; overflow:hidden;
+  transition:max-height 0.28s ease, opacity 0.22s ease, margin-top 0.22s ease;
+  opacity:0; margin-top:0;
+  font-size:10.5px; line-height:1.65; color:var(--text2);
+  border-radius:7px;
+}
+.pcard-popover.open {
+  max-height:220px; opacity:1; margin-top:8px;
+  background:var(--s2,#f8fafc); border:1px solid var(--border2);
+  padding:9px 11px 10px;
+}
+.pcard-popover .pop-pros { color:#059669; font-weight:700; margin-bottom:2px; font-size:10px; letter-spacing:0.04em; }
+.pcard-popover .pop-cons { color:#dc2626; font-weight:700; margin-top:7px; margin-bottom:2px; font-size:10px; letter-spacing:0.04em; }
+.pcard-popover .pop-body { color:var(--text2); }
 .cond-name { line-height:1.5; max-width:240px; }
 .rslbl { font-size:9.5px;font-weight:800;letter-spacing:1.5px;color:var(--yellow);text-transform:uppercase; }
  
@@ -439,10 +504,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
   <div class="brand">
     <h1 class="brand-title">Automatic Motor Starter Calculation</h1>
   </div>
-  <div class="tags">
-    <span class="tag blue">DOL</span>
-    <span class="tag green">STAR-DELTA</span>
-  </div>
+  <button id="theme-toggle" onclick="toggleTheme()" title="สลับธีมสว่าง/มืด">☀️ Light</button>
 </div>
  
 <div class="grid">
@@ -576,6 +638,13 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
         <div class="psel">เลือก BOQ</div>
         <div class="pcard-tick">✓ เลือกแล้ว</div>
         <div class="cheap">ถูกสุด</div>
+        <button class="pcard-info-btn" onclick="event.stopPropagation();togglePop('pop-vct',this)">ⓘ ข้อมูล</button>
+        <div class="pcard-popover" id="pop-vct">
+          <div class="pop-pros">✅ ข้อดี</div>
+          <div class="pop-body">อ่อนตัวสูง ดัดโค้งง่าย เหมาะกับมอเตอร์ที่มีความสั่นสะเทือนหรือพื้นที่แคบ</div>
+          <div class="pop-cons">⚠️ ข้อเสีย</div>
+          <div class="pop-body">ทนอุณหภูมิได้แค่ 70°C พิกัดกระแสต่ำกว่าสาย CV ฝังดินโดยตรงไม่ได้</div>
+        </div>
       </div>
       <div class="pcard c-cv sel" id="pc-cv" onclick="pickCable('cv')">
         <div class="pt">CV+THW(G)</div>
@@ -585,6 +654,13 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
         <div class="psel">เลือก BOQ</div>
         <div class="pcard-tick">✓ เลือกแล้ว</div>
         <div class="cheap">ถูกสุด</div>
+        <button class="pcard-info-btn" onclick="event.stopPropagation();togglePop('pop-cv',this)">ⓘ ข้อมูล</button>
+        <div class="pcard-popover" id="pop-cv">
+          <div class="pop-pros">✅ ข้อดี</div>
+          <div class="pop-body">ทนความร้อนสูง (90°C) รับพิกัดกระแสได้สูงที่สุด นำกระแสได้ดีมาก</div>
+          <div class="pop-cons">⚠️ ข้อเสีย</div>
+          <div class="pop-body">สายแข็ง โค้งงอยากกว่าสายชนิดอื่น ราคาสูง</div>
+        </div>
       </div>
       <div class="pcard c-nyy" id="pc-nyy" onclick="pickCable('nyy')">
         <div class="pt">NYY3/C-G</div>
@@ -594,6 +670,13 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
         <div class="psel">เลือก BOQ</div>
         <div class="pcard-tick">✓ เลือกแล้ว</div>
         <div class="cheap">ถูกสุด</div>
+        <button class="pcard-info-btn" onclick="event.stopPropagation();togglePop('pop-nyy',this)">ⓘ ข้อมูล</button>
+        <div class="pcard-popover" id="pop-nyy">
+          <div class="pop-pros">✅ ข้อดี</div>
+          <div class="pop-body">ฉนวน 2 ชั้น ทนทานสูงมาก สามารถฝังดินโดยตรงได้ (Direct burial)</div>
+          <div class="pop-cons">⚠️ ข้อเสีย</div>
+          <div class="pop-body">น้ำหนักมาก สายค่อนข้างแข็ง ดึงสายในท่อได้ยาก</div>
+        </div>
       </div>
       <div class="pcard c-thw" id="pc-thw" onclick="pickCable('thw')">
         <div class="pt">THW</div>
@@ -603,6 +686,13 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
         <div class="psel">เลือก BOQ</div>
         <div class="pcard-tick">✓ เลือกแล้ว</div>
         <div class="cheap">ถูกสุด</div>
+        <button class="pcard-info-btn" onclick="event.stopPropagation();togglePop('pop-thw',this)">ⓘ ข้อมูล</button>
+        <div class="pcard-popover" id="pop-thw">
+          <div class="pop-pros">✅ ข้อดี</div>
+          <div class="pop-body">เป็นสายมาตรฐานทั่วไป หาซื้อง่าย</div>
+          <div class="pop-cons">⚠️ ข้อเสีย</div>
+          <div class="pop-body">เสี่ยงชำรุดง่าย (ฉนวนเพียงชั้นเดียว) เป็นสายแกนเดี่ยวต้องร้อยท่อหลายเส้น ทนอุณหภูมิได้แค่ 70°C ฝังดินโดยตรงไม่ได้</div>
+        </div>
       </div>
     </div>
     <div class="bars">
@@ -772,7 +862,7 @@ function calcVD(cableType, cableSize, Ifl, dist, V, mode) {
   const I = (mode === 'STAR-DELTA') ? Ifl / Math.sqrt(3) : Ifl;
   return (factor * I * dist * 1e-3 * 100) / V;
 }
-
+ 
 // =====================================================================
 // CABLE AMPACITY LOOKUP — พิกัดกระแสทนได้ (Max Ampacity)
 // Source: VD+Imax sheet, columns L (DOL) / M (Star-Delta).
@@ -798,7 +888,7 @@ const IMAX = {
     sd:  {'6x2.5/2.5':18,'6x4/4':24,'6x6/4':31,'6x10/4':44,'6x10/6':44,'6x25/6':77,'6x25/10':77,'6x35/10':96,'6x50/16':117,'6x70/16':149,'6x95/16':180,'6x120/25':208,'6x185/25':258,'12x70/25':149,'12x70/35':149,'12x95/35':180,'12x120/50':208,'12x150/50':228,'12x185/50':258,'12x300/70':343}
   },
 };
-
+ 
 // Cable ampacity lookup for one cable type — mirrors VD+Imax cols L (DOL) / M (Star-Delta).
 // Returns the max current (A) the cable can carry, or null if the size isn't tabulated.
 function lookupImax(cableType, cableSize, mode) {
@@ -808,14 +898,14 @@ function lookupImax(cableType, cableSize, mode) {
   const v = tbl[cableSize];
   return (v == null) ? null : v;
 }
-
+ 
 // =====================================================================
 // CABLE SELECTION CURRENT (กระแสสำหรับเลือกสายไฟ / Design Current)
 // Source: VD+Imax sheet, "การคิดกระแสเลือกสาย" (rows 13–19).
 //   Selection Current = Im × ตัวคูณ (multiplier), where Im = กระแสพิกัดฐาน (full-load current Ifl).
 //   The per-cable multiplier (single run = 1.25/0.906; parallel runs derate) is
 //   shown inline next to each cable's Voltage Drop — see CABLE_MULT below.
-
+ 
 // Per-cable multiplier (ตัวคูณเลือกสาย) — the FULL formula text from VD+Imax C17:E19,
 // shown verbatim in the UI. MULT_DEF maps each formula to its numeric value used for
 // the current calculation. VCT is a flat factor (C16/E16): 1.25Im (DOL) / 0.906Im (SD).
@@ -843,7 +933,7 @@ const CABLE_MULT = {
     sd:  {'6x2.5/2.5':'0.906Im','6x4/4':'0.906Im','6x6/4':'0.906Im','6x10/4':'0.906Im','6x10/6':'0.906Im','6x25/6':'0.906Im','6x25/10':'0.906Im','6x35/10':'0.906Im','6x50/16':'0.906Im','6x70/16':'0.906Im','6x95/16':'0.906Im','6x120/25':'0.906Im','6x185/25':'0.906Im','12x70/25':'(1.25×0.58×Im)/2','12x70/35':'(1.25×0.58×Im)/2','12x95/35':'(1.25×0.58×Im)/2','12x120/50':'(1.25×0.58×Im)/2','12x150/50':'(1.25×0.58×Im)/2','12x185/50':'(1.25×0.58×Im)/2','12x300/70':'(1.25×0.58×Im)/2'}
   }
 };
-
+ 
 // Returns the multiplier FORMULA string for one cable type+size+mode.
 // VCT uses the flat base formula; cv/nyy/thw look up by size, falling back to base.
 function cableMult(cableType, cableSize, mode) {
@@ -853,7 +943,7 @@ function cableMult(cableType, cableSize, mode) {
   const f = CABLE_MULT[cableType]?.[(sd ? 'sd' : 'dol')]?.[cableSize];
   return f || baseF;
 }
-
+ 
 // Per-cable selection current. Returns { mult:<formula text>, multN:<number>, I:Im*multN }.
 function cableSelCurrent(cableType, cableSize, Ifl, mode) {
   const mult = cableMult(cableType, cableSize, mode);
@@ -949,6 +1039,27 @@ function pickCable(t) {
   if (lastR) { renderComps(lastR); renderBOQ(lastR, t); }
 }
  
+// ── Pros/Cons popover toggle ─────────────────────────────────────
+function togglePop(id, btn) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  const isOpen = target.classList.contains('open');
+  // Close all other open popovers first
+  document.querySelectorAll('.pcard-popover.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.pcard-info-btn').forEach(b => b.textContent = 'ⓘ ข้อมูล');
+  if (!isOpen) {
+    target.classList.add('open');
+    if (btn) btn.textContent = '✕ ปิด';
+  }
+}
+// Click outside any pcard closes open popovers
+document.addEventListener('click', e => {
+  if (!e.target.closest('.pcard-info-btn') && !e.target.closest('.pcard-popover')) {
+    document.querySelectorAll('.pcard-popover.open').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.pcard-info-btn').forEach(b => b.textContent = 'ⓘ ข้อมูล');
+  }
+});
+ 
 function fmt(n) {
   if (n==null||isNaN(n)) return '—';
   return Number(n).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
@@ -1021,7 +1132,7 @@ function calculate() {
   const ratedA = (mode === 'sd')
     ? dynamicMatchMode(Ifl, SD_RATED_TABLE)   // SD: dynamic match on LINE current (Ifl)
     : dynamicMatchMode(Ifl, DOL_RATED_TABLE);  // DOL: dynamic match on full-load current (Ifl)
-
+ 
   // Display: full-load current
   document.getElementById('curbox').innerHTML = `
     <div class="cl">🔌 กระแสเต็มพิกัด (Full Load Current)</div>
@@ -1047,6 +1158,29 @@ function calculate() {
     ];
     cables  = {vct:{s:row[13],p:row[14]}, cv:{s:row[15],p:row[16]}, nyy:{s:row[17],p:row[18]}, thw:{s:row[19],p:row[20]}};
     conds   = {vct:{s:row[21],p:row[22]}, cv:{s:row[23],p:row[24]}, nyy:{s:row[25],p:row[26]}, thw:{s:row[27],p:row[28]}};
+ 
+    // ── Auto-upsize: walk up SD table until cable ampacity ≥ selection current ──
+    // Rules:
+    //   1. If current cable size is null/'-', skip row (cable not available for this type).
+    //   2. If Imax >= sel.I → safe, stop.
+    //   3. Otherwise move to next row and re-read cable size & price from correct columns.
+    const COL_SD = { vct:[13,14,21,22], cv:[15,16,23,24], nyy:[17,18,25,26], thw:[19,20,27,28] };
+    let startIdx = SD.indexOf(row);
+    ['vct','cv','nyy','thw'].forEach(k => {
+      let idx = startIdx;
+      while (idx < SD.length - 1) {
+        const cabSize = cables[k].s;
+        // Skip rows where this cable type is not available
+        if (!cabSize || cabSize === '-') { idx++; const [cs,cp,ds,dp]=COL_SD[k]; cables[k]={s:SD[idx][cs],p:SD[idx][cp]}; conds[k]={s:SD[idx][ds],p:SD[idx][dp]}; continue; }
+        const imax = lookupImax(k, cabSize, 'STAR-DELTA');
+        // If Imax unknown for this size, also skip up
+        if (imax == null) { idx++; const [cs,cp,ds,dp]=COL_SD[k]; cables[k]={s:SD[idx][cs],p:SD[idx][cp]}; conds[k]={s:SD[idx][ds],p:SD[idx][dp]}; continue; }
+        const sel = cableSelCurrent(k, cabSize, Ifl, 'STAR-DELTA');
+        if (sel.I <= imax) break; // ✅ safe — ampacity sufficient
+        idx++; const [cs,cp,ds,dp]=COL_SD[k]; cables[k]={s:SD[idx][cs],p:SD[idx][cp]}; conds[k]={s:SD[idx][ds],p:SD[idx][dp]};
+      }
+    });
+ 
     const vds_sd = {}, imax_sd = {}, isel_sd = {};
     ['vct','cv','nyy','thw'].forEach(k => { vds_sd[k] = calcVD(k, cables[k].s, Ifl, dist, V, 'STAR-DELTA'); imax_sd[k] = lookupImax(k, cables[k].s, 'STAR-DELTA'); isel_sd[k] = cableSelCurrent(k, cables[k].s, Ifl, 'STAR-DELTA'); });
     r = {mode:'STAR-DELTA', kw, dist, V, pf, eff, Ifl, Iwork, ratedA, hp:row[1], A:row[2], comps, cables, conds, vd:vds_sd, imax:imax_sd, isel:isel_sd, rawRow:row, olt};
@@ -1066,6 +1200,23 @@ function calculate() {
     ];
     cables  = {vct:{s:row[9],p:row[10]}, cv:{s:row[11],p:row[12]}, nyy:{s:row[13],p:row[14]}, thw:{s:row[15],p:row[16]}};
     conds   = {vct:{s:row[17],p:row[18]}, cv:{s:row[19],p:row[20]}, nyy:{s:row[21],p:row[22]}, thw:{s:row[23],p:row[24]}};
+ 
+    // ── Auto-upsize: walk up DOL table until cable ampacity ≥ selection current ──
+    const COL_DOL = { vct:[9,10,17,18], cv:[11,12,19,20], nyy:[13,14,21,22], thw:[15,16,23,24] };
+    let startIdx = DOL.indexOf(row);
+    ['vct','cv','nyy','thw'].forEach(k => {
+      let idx = startIdx;
+      while (idx < DOL.length - 1) {
+        const cabSize = cables[k].s;
+        if (!cabSize || cabSize === '-') { idx++; const [cs,cp,ds,dp]=COL_DOL[k]; cables[k]={s:DOL[idx][cs],p:DOL[idx][cp]}; conds[k]={s:DOL[idx][ds],p:DOL[idx][dp]}; continue; }
+        const imax = lookupImax(k, cabSize, 'DOL');
+        if (imax == null) { idx++; const [cs,cp,ds,dp]=COL_DOL[k]; cables[k]={s:DOL[idx][cs],p:DOL[idx][cp]}; conds[k]={s:DOL[idx][ds],p:DOL[idx][dp]}; continue; }
+        const sel = cableSelCurrent(k, cabSize, Ifl, 'DOL');
+        if (sel.I <= imax) break; // ✅ safe — ampacity sufficient
+        idx++; const [cs,cp,ds,dp]=COL_DOL[k]; cables[k]={s:DOL[idx][cs],p:DOL[idx][cp]}; conds[k]={s:DOL[idx][ds],p:DOL[idx][dp]};
+      }
+    });
+ 
     const vds_dol = {}, imax_dol = {}, isel_dol = {};
     ['vct','cv','nyy','thw'].forEach(k => { vds_dol[k] = calcVD(k, cables[k].s, Ifl, dist, V, 'DOL'); imax_dol[k] = lookupImax(k, cables[k].s, 'DOL'); isel_dol[k] = cableSelCurrent(k, cables[k].s, Ifl, 'DOL'); });
     r = {mode:'DOL', kw, dist, V, pf, eff, Ifl, Iwork:Ifl, ratedA, hp:row[1], A:row[2], comps, cables, conds, vd:vds_dol, imax:imax_dol, isel:isel_dol, rawRow:row, olt};
@@ -1089,7 +1240,7 @@ function calculate() {
       el.className='pv err';
     }
     else{el.textContent=fmt(prices[k]);el.className='pv';}
-
+ 
     // ── Voltage drop chip (VD%) ─────────────────────────────────
     const vdEl = document.getElementById('pvd-'+k);
     if (vdEl) {
@@ -1178,24 +1329,26 @@ function renderComps(r) {
     const hasVal = d.p != null;
     // Task 1: VCT with no price → cable capacity exceeded, show Thai message in red
     const errTxt = (k === 'vct') ? 'ขนาดสายไม่รองรับ' : '#VALUE!';
-    // ── Ampacity chip (พิกัดกระแสทนได้) — from VD+Imax sheet cols L/M ──
-    const imVal  = r.imax?.[k];
-    const ampChip = imVal != null
-      ? `<span class="chip chip-amp"><span class="chip-k">⚡ พิกัดกระแสทนได้</span><span class="chip-v">${fmt(imVal)} A</span></span>`
-      : '';
-    // ── Voltage-drop chip — colour-coded (≤3% ดี, ≤5% ยอมรับได้, >5% เกิน) ──
-    //    + inline cable-selection current: แรงดันตก (VD) X% | กระแสเลือกสาย (xM): YA
-    const vdVal  = r.vd?.[k];
-    const selC   = r.isel?.[k];
+    // ── Group 1: Ampacity + Cable Selection Current combined ──────────────
+    //    ⚡ พิกัดกระแสทนได้ X A | กระแสเลือกสาย (mult): Y A
+    const imVal = r.imax?.[k];
+    const selC  = r.isel?.[k];
+    let ampChip = '';
+    if (imVal != null) {
+      const iselTxt = selC
+        ? `<span class="chip-sep">|</span><span class="chip-k">กระแสเลือกสาย ${selC.mult}:</span><span class="chip-isel">${selC.I.toFixed(3)}A</span>`
+        : '';
+      ampChip = `<span class="chip chip-amp"><span class="chip-k">⚡ พิกัดกระแสทนได้</span><span class="chip-v">${fmt(imVal)} A</span>${iselTxt}</span>`;
+    }
+    // ── Group 2: Voltage Drop — standalone, colour-coded ─────────────────
+    //    แรงดันตก (VD) X%   (green ≤3%, amber ≤5%, red >5%)
+    const vdVal = r.vd?.[k];
     let vdChip = '';
     if (vdVal != null) {
       let vc = 'vd-ok';
       if (vdVal > 5)      vc = 'vd-bad';
       else if (vdVal > 3) vc = 'vd-warn';
-      const selTxt = selC
-        ? `<span class="chip-sep">|</span><span class="chip-k">กระแสเลือกสาย ${selC.mult}:</span><span class="chip-isel">${selC.I.toFixed(3)}A</span>`
-        : '';
-      vdChip = `<span class="chip chip-vd ${vc}"><span class="chip-k">แรงดันตก (VD)</span><span class="chip-v">${vdVal.toFixed(2)}%</span>${selTxt}</span>`;
+      vdChip = `<span class="chip chip-vd ${vc}"><span class="chip-k">แรงดันตก (VD)</span><span class="chip-v">${vdVal.toFixed(2)}%</span></span>`;
     }
     const chips = (ampChip || vdChip)
       ? `<div class="meta-chips">${ampChip}${vdChip}</div>` : '';
@@ -1457,7 +1610,7 @@ const BOQ_HEADER = {
 const BOQ_FIXED_ITEMS = [
   // (ลูกลอยไฟฟ้าถูกเอาออกแล้ว — ถ้าต้องการเพิ่มรายการมาตรฐานกลับมา ใส่ที่นี่)
 ];
-
+ 
 // ── copyBOQ ──────────────────────────────────────────────────────────────────
 // Copies the FULL BOQ as a rich HTML <table> (merged header cells + colours),
 // so pasting into a BLANK Excel sheet reproduces the company form 1:1.
@@ -1472,7 +1625,7 @@ function copyBOQ() {
   const cab   = r.cables[ck];
   const cond  = r.conds[ck];
   const H     = BOQ_HEADER;
-
+ 
   // ── amounts ────────────────────────────────────────────────────────────────
   const cabT     = cab.p  != null ? cab.p  * r.dist : null;
   const conT     = cond.p != null ? cond.p * r.dist : null;
@@ -1486,11 +1639,11 @@ function copyBOQ() {
   const condLbl  = conduitLabel(cond.s, r.mode);
   const d = new Date();
   const dateStr = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
-
+ 
   const c = n => (n == null || isNaN(n)) ? '-'
     : Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-
+ 
   // ── styles ── (DilleniaUPC 12pt, ไม่หนา, จัดกึ่งกลางทุกช่อง)
   const FONT='font-family:DilleniaUPC,\'Angsana New\',\'Cordia New\',serif;font-size:12pt;font-weight:normal;';
   const BD='border:1px solid #000;padding:2px 5px;'+FONT+'vertical-align:middle;text-align:center;';
@@ -1502,13 +1655,13 @@ function copyBOQ() {
   const empt    = (n, st='') => { let s=''; for (let i=0;i<n;i++) s+=`<td style="${BD}${st}"></td>`; return s; };
   // tail after BOQ-TOTAL: Actual(5) + Conclusion(2, yellow) + REMARK(1)
   const tail = (st='') => empt(5, st) + `<td style="${BD}${YE}"></td><td style="${BD}${YE}"></td><td style="${BD}${st}"></td>`;
-
+ 
   const T = [];
   T.push('<table border="1" style="border-collapse:collapse;">');
-
+ 
   // ── Title ──
   T.push(`<tr><td colspan="18" style="border:none;${C}color:#000;${FONT}">${esc(H.title)}</td></tr>`);
-
+ 
   // ── Company + project metadata (logo cell spans 4 rows) ──
   T.push('<tr>'
     + `<td rowspan="4" style="${BD}${C}color:#000;">${esc(H.company)}</td>`
@@ -1531,7 +1684,7 @@ function copyBOQ() {
     + `<td style="${BD}">JOB :</td><td colspan="7" style="${BD}">${esc(H.job)}</td>`
     + `<td colspan="3" style="${BD}">IO :</td><td colspan="2" style="${BD}"></td>`
     + '</tr>');
-
+ 
   // ── Column header (3 stacked rows, mirrors the merged Excel cells) ──
   T.push('<tr>'
     + `<td rowspan="3" style="${BD}${C}${BL}">ITEM</td>`
@@ -1558,7 +1711,7 @@ function copyBOQ() {
     + `<td style="${BD}${C}${GB}">UNIT PRICE @</td><td style="${BD}${C}${GB}">AMOUNT (BHT)</td>`
     + `<td style="${BD}${C}${GYb}">(BHT)</td><td style="${BD}${C}${GYb}">(BHT)</td>`
     + '</tr>');
-
+ 
   // ── Body row helpers ──
   const rowSection = (item, label) => '<tr>'
     + cell(item, C) + cell(label, L)
@@ -1582,7 +1735,7 @@ function copyBOQ() {
     + numCell('', GY) + numCell(amt, GY) + numCell('', GY) + numCell('0.0', GY) + numCell(amt, GY)
     + tail(GY) + '</tr>';
   const blank = () => '<tr>' + empt(18) + '</tr>';
-
+ 
   // ── Body ──
   T.push(rowSection('', 'งานติดตั้งชุดสตาร์ทมอเตอร์'));
   T.push(rowSection('1', 'ตู้ชุดสตาร์ท'));
@@ -1609,7 +1762,7 @@ function copyBOQ() {
   T.push(rowGray('Total', '1.0', 'Job', c(grandT)));
   T.push('</table>');
   const html = T.join('');
-
+ 
   // ── Plain-text TSV fallback (same 18-column body) ──
   const COLS = 18;
   const mk = (m) => { const a = new Array(COLS).fill(''); for (const k in m) a[k] = m[k]; return a; };
@@ -1638,7 +1791,7 @@ function copyBOQ() {
   rows.push(mk({}));
   rows.push(mk({ 1: 'Total', 2: '1.0', 4: 'Job', 6: c(grandT), 8: '0.0', 9: c(grandT) }));
   const tsv = rows.map(a => a.map(x => String(x).replace(/\t/g, ' ').replace(/\n/g, ' ')).join('\t')).join('\n');
-
+ 
   // ── write HTML + plain text to the clipboard ──
   if (navigator.clipboard && window.ClipboardItem) {
     try {
@@ -1652,7 +1805,7 @@ function copyBOQ() {
   }
   fallbackCopyHTML(html, tsv);
 }
-
+ 
 // Rich-HTML clipboard fallback: select a hidden contenteditable & execCommand('copy')
 function fallbackCopyHTML(html, tsv) {
   try {
@@ -1698,7 +1851,25 @@ function flashBtn(ok) {
   }, 3000);
 }
  
-window.onload=()=>{calculate();pickCable('cv');};
+window.onload=()=>{
+  // Restore saved theme
+  if (localStorage.getItem('theme') === 'dark') applyDark(true);
+  calculate();
+  pickCable('cv');
+};
+ 
+// ── Dark / Light mode ─────────────────────────────────────────────
+function applyDark(on) {
+  document.body.classList.toggle('dark', on);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = on ? '🌙 Dark' : '☀️ Light';
+}
+ 
+function toggleTheme() {
+  const isDark = document.body.classList.contains('dark');
+  applyDark(!isDark);
+  localStorage.setItem('theme', !isDark ? 'dark' : 'light');
+}
 </script>
 </body>
 </html>
