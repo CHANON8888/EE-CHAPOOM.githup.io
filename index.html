@@ -493,9 +493,40 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 @keyframes fu { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
 .card { animation:fu .3s ease both; }
  
+/* ───── Responsive: tablet & mobile ───── */
 @media(max-width:900px){
   .grid{grid-template-columns:1fr}
+  /* let the stacked columns shrink to the viewport instead of being forced
+     wide by the min-content width of the tables inside them */
+  .grid > div, .rcol, .rcol > .card { min-width:0; }
   .pcards{grid-template-columns:1fr 1fr}
+  /* wide tables scroll inside their own card rather than widening the whole page */
+  #comp-area, #boq-area, .boq-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+}
+@media(max-width:560px){
+  .wrap{padding:12px 9px}
+  .cbody{padding:13px}
+  .chead{padding:11px 13px}
+  .chead h2{font-size:12px}
+  /* inputs: smaller label column so the field keeps room */
+  .irow{grid-template-columns:92px 1fr 38px; gap:6px}
+  /* component table: tighter so it fits a phone width */
+  .rtable{font-size:11.5px}
+  .rtable thead th{padding:7px 8px}
+  .rtable td{padding:7px 8px}
+  .chip{font-size:9.5px; padding:2px 6px 3px; gap:4px}
+  .cab-row td{padding-top:9px; padding-bottom:9px}
+  /* BOQ table: compact; scrolls horizontally if still too wide */
+  .boq-xl{font-size:10.5px}
+  .boq-xl th{padding:6px 8px}
+  .boq-xl td{padding:6px 8px}
+  .boq-xl th:first-child{min-width:150px}
+  .boq-toolbar{padding:10px 12px}
+  .curbox .big{font-size:23px}
+}
+@media(max-width:380px){
+  .pcards{gap:7px; padding:11px 11px}
+  .irow{grid-template-columns:80px 1fr 32px}
 }
 </style>
 </head>
