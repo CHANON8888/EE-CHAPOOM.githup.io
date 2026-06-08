@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Automatic Motor Starter Calculation</title>
@@ -29,7 +27,7 @@
   --input: #ffffff;
   --blue-in: rgba(37,99,235,0.06);
 }
- 
+
 /* ── Dark mode overrides ─────────────────────────────────────── */
 body.dark {
   --bg:      #0f1117;
@@ -56,7 +54,7 @@ body.dark .pcard          { background:var(--s1); }
 body.dark .pcard-popover  { background:var(--s2); }
 body.dark .irow select option { background:var(--s2); color:var(--text); }
 body.dark .boq-xl         { color:var(--text); }
- 
+
 /* ── Theme toggle button ─────────────────────────────────────── */
 #theme-toggle {
   display:inline-flex; align-items:center; justify-content:center;
@@ -117,7 +115,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 }
 .ticon { display:none; } /* old icon removed */
 .topbar p { font-size:12px; color:var(--text2); margin-top:2px; }
- 
+
 @media (max-width:640px) {
   .topbar { padding:22px 22px; gap:14px; border-radius:14px; }
   .brand-title { font-size:clamp(22px,6.5vw,32px); letter-spacing:-0.8px; }
@@ -493,40 +491,9 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 @keyframes fu { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
 .card { animation:fu .3s ease both; }
  
-/* ───── Responsive: tablet & mobile ───── */
 @media(max-width:900px){
   .grid{grid-template-columns:1fr}
-  /* let the stacked columns shrink to the viewport instead of being forced
-     wide by the min-content width of the tables inside them */
-  .grid > div, .rcol, .rcol > .card { min-width:0; }
   .pcards{grid-template-columns:1fr 1fr}
-  /* wide tables scroll inside their own card rather than widening the whole page */
-  #comp-area, #boq-area, .boq-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-}
-@media(max-width:560px){
-  .wrap{padding:12px 9px}
-  .cbody{padding:13px}
-  .chead{padding:11px 13px}
-  .chead h2{font-size:12px}
-  /* inputs: smaller label column so the field keeps room */
-  .irow{grid-template-columns:92px 1fr 38px; gap:6px}
-  /* component table: tighter so it fits a phone width */
-  .rtable{font-size:11.5px}
-  .rtable thead th{padding:7px 8px}
-  .rtable td{padding:7px 8px}
-  .chip{font-size:9.5px; padding:2px 6px 3px; gap:4px}
-  .cab-row td{padding-top:9px; padding-bottom:9px}
-  /* BOQ table: compact; scrolls horizontally if still too wide */
-  .boq-xl{font-size:10.5px}
-  .boq-xl th{padding:6px 8px}
-  .boq-xl td{padding:6px 8px}
-  .boq-xl th:first-child{min-width:150px}
-  .boq-toolbar{padding:10px 12px}
-  .curbox .big{font-size:23px}
-}
-@media(max-width:380px){
-  .pcards{gap:7px; padding:11px 11px}
-  .irow{grid-template-columns:80px 1fr 32px}
 }
 </style>
 </head>
@@ -895,7 +862,7 @@ function calcVD(cableType, cableSize, Ifl, dist, V, mode) {
   const I = (mode === 'STAR-DELTA') ? Ifl / Math.sqrt(3) : Ifl;
   return (factor * I * dist * 1e-3 * 100) / V;
 }
- 
+
 // =====================================================================
 // CABLE AMPACITY LOOKUP — พิกัดกระแสทนได้ (Max Ampacity)
 // Source: VD+Imax sheet, columns L (DOL) / M (Star-Delta).
@@ -921,7 +888,7 @@ const IMAX = {
     sd:  {'6x2.5/2.5':18,'6x4/4':24,'6x6/4':31,'6x10/4':44,'6x10/6':44,'6x25/6':77,'6x25/10':77,'6x35/10':96,'6x50/16':117,'6x70/16':149,'6x95/16':180,'6x120/25':208,'6x185/25':258,'12x70/25':149,'12x70/35':149,'12x95/35':180,'12x120/50':208,'12x150/50':228,'12x185/50':258,'12x300/70':343}
   },
 };
- 
+
 // Cable ampacity lookup for one cable type — mirrors VD+Imax cols L (DOL) / M (Star-Delta).
 // Returns the max current (A) the cable can carry, or null if the size isn't tabulated.
 function lookupImax(cableType, cableSize, mode) {
@@ -931,14 +898,14 @@ function lookupImax(cableType, cableSize, mode) {
   const v = tbl[cableSize];
   return (v == null) ? null : v;
 }
- 
+
 // =====================================================================
 // CABLE SELECTION CURRENT (กระแสสำหรับเลือกสายไฟ / Design Current)
 // Source: VD+Imax sheet, "การคิดกระแสเลือกสาย" (rows 13–19).
 //   Selection Current = Im × ตัวคูณ (multiplier), where Im = กระแสพิกัดฐาน (full-load current Ifl).
 //   The per-cable multiplier (single run = 1.25/0.906; parallel runs derate) is
 //   shown inline next to each cable's Voltage Drop — see CABLE_MULT below.
- 
+
 // Per-cable multiplier (ตัวคูณเลือกสาย) — the FULL formula text from VD+Imax C17:E19,
 // shown verbatim in the UI. MULT_DEF maps each formula to its numeric value used for
 // the current calculation. VCT is a flat factor (C16/E16): 1.25Im (DOL) / 0.906Im (SD).
@@ -966,7 +933,7 @@ const CABLE_MULT = {
     sd:  {'6x2.5/2.5':'0.906Im','6x4/4':'0.906Im','6x6/4':'0.906Im','6x10/4':'0.906Im','6x10/6':'0.906Im','6x25/6':'0.906Im','6x25/10':'0.906Im','6x35/10':'0.906Im','6x50/16':'0.906Im','6x70/16':'0.906Im','6x95/16':'0.906Im','6x120/25':'0.906Im','6x185/25':'0.906Im','12x70/25':'(1.25×0.58×Im)/2','12x70/35':'(1.25×0.58×Im)/2','12x95/35':'(1.25×0.58×Im)/2','12x120/50':'(1.25×0.58×Im)/2','12x150/50':'(1.25×0.58×Im)/2','12x185/50':'(1.25×0.58×Im)/2','12x300/70':'(1.25×0.58×Im)/2'}
   }
 };
- 
+
 // Returns the multiplier FORMULA string for one cable type+size+mode.
 // VCT uses the flat base formula; cv/nyy/thw look up by size, falling back to base.
 function cableMult(cableType, cableSize, mode) {
@@ -976,7 +943,7 @@ function cableMult(cableType, cableSize, mode) {
   const f = CABLE_MULT[cableType]?.[(sd ? 'sd' : 'dol')]?.[cableSize];
   return f || baseF;
 }
- 
+
 // Per-cable selection current. Returns { mult:<formula text>, multN:<number>, I:Im*multN }.
 function cableSelCurrent(cableType, cableSize, Ifl, mode) {
   const mult = cableMult(cableType, cableSize, mode);
@@ -1071,7 +1038,7 @@ function pickCable(t) {
   ['vct','cv','nyy','thw'].forEach(k => document.getElementById('pc-'+k).classList.toggle('sel', k===t));
   if (lastR) { renderComps(lastR); renderBOQ(lastR, t); }
 }
- 
+
 // ── Pros/Cons popover toggle ─────────────────────────────────────
 function togglePop(id, btn) {
   const target = document.getElementById(id);
@@ -1165,7 +1132,7 @@ function calculate() {
   const ratedA = (mode === 'sd')
     ? dynamicMatchMode(Ifl, SD_RATED_TABLE)   // SD: dynamic match on LINE current (Ifl)
     : dynamicMatchMode(Ifl, DOL_RATED_TABLE);  // DOL: dynamic match on full-load current (Ifl)
- 
+
   // Display: full-load current
   document.getElementById('curbox').innerHTML = `
     <div class="cl">🔌 กระแสเต็มพิกัด (Full Load Current)</div>
@@ -1191,7 +1158,7 @@ function calculate() {
     ];
     cables  = {vct:{s:row[13],p:row[14]}, cv:{s:row[15],p:row[16]}, nyy:{s:row[17],p:row[18]}, thw:{s:row[19],p:row[20]}};
     conds   = {vct:{s:row[21],p:row[22]}, cv:{s:row[23],p:row[24]}, nyy:{s:row[25],p:row[26]}, thw:{s:row[27],p:row[28]}};
- 
+
     // ── Auto-upsize: walk up SD table until cable ampacity ≥ selection current ──
     // Rules:
     //   1. If current cable size is null/'-', skip row (cable not available for this type).
@@ -1213,7 +1180,27 @@ function calculate() {
         idx++; const [cs,cp,ds,dp]=COL_SD[k]; cables[k]={s:SD[idx][cs],p:SD[idx][cp]}; conds[k]={s:SD[idx][ds],p:SD[idx][dp]};
       }
     });
- 
+
+    // ── Auto-downsize (cost optimisation): walk BACK to smaller size if it still covers sel.I ──
+    ['vct','cv','nyy','thw'].forEach(k => {
+      const [cs,cp,ds,dp] = COL_SD[k];
+      let idx = SD.findIndex(r => r[cs] === cables[k].s && r[cp] === cables[k].p);
+      if (idx < 0) idx = SD.indexOf(row); // fallback
+      while (idx > 0) {
+        const prevIdx = idx - 1;
+        const prevS = SD[prevIdx][cs];
+        if (!prevS || prevS === '-') break; // previous row has no cable for this type
+        const prevImax = lookupImax(k, prevS, 'STAR-DELTA');
+        if (prevImax == null) break;
+        const sel = cableSelCurrent(k, prevS, Ifl, 'STAR-DELTA');
+        if (prevImax < sel.I) break; // smaller cable is insufficient — stop
+        // ✅ smaller cable is still safe — downsize
+        idx = prevIdx;
+        cables[k] = { s: SD[idx][cs], p: SD[idx][cp] };
+        conds[k]  = { s: SD[idx][ds], p: SD[idx][dp] };
+      }
+    });
+
     const vds_sd = {}, imax_sd = {}, isel_sd = {};
     ['vct','cv','nyy','thw'].forEach(k => { vds_sd[k] = calcVD(k, cables[k].s, Ifl, dist, V, 'STAR-DELTA'); imax_sd[k] = lookupImax(k, cables[k].s, 'STAR-DELTA'); isel_sd[k] = cableSelCurrent(k, cables[k].s, Ifl, 'STAR-DELTA'); });
     r = {mode:'STAR-DELTA', kw, dist, V, pf, eff, Ifl, Iwork, ratedA, hp:row[1], A:row[2], comps, cables, conds, vd:vds_sd, imax:imax_sd, isel:isel_sd, rawRow:row, olt};
@@ -1233,7 +1220,7 @@ function calculate() {
     ];
     cables  = {vct:{s:row[9],p:row[10]}, cv:{s:row[11],p:row[12]}, nyy:{s:row[13],p:row[14]}, thw:{s:row[15],p:row[16]}};
     conds   = {vct:{s:row[17],p:row[18]}, cv:{s:row[19],p:row[20]}, nyy:{s:row[21],p:row[22]}, thw:{s:row[23],p:row[24]}};
- 
+
     // ── Auto-upsize: walk up DOL table until cable ampacity ≥ selection current ──
     const COL_DOL = { vct:[9,10,17,18], cv:[11,12,19,20], nyy:[13,14,21,22], thw:[15,16,23,24] };
     let startIdx = DOL.indexOf(row);
@@ -1249,7 +1236,27 @@ function calculate() {
         idx++; const [cs,cp,ds,dp]=COL_DOL[k]; cables[k]={s:DOL[idx][cs],p:DOL[idx][cp]}; conds[k]={s:DOL[idx][ds],p:DOL[idx][dp]};
       }
     });
- 
+
+    // ── Auto-downsize (cost optimisation): walk BACK to smaller size if it still covers sel.I ──
+    ['vct','cv','nyy','thw'].forEach(k => {
+      const [cs,cp,ds,dp] = COL_DOL[k];
+      let idx = DOL.findIndex(r => r[cs] === cables[k].s && r[cp] === cables[k].p);
+      if (idx < 0) idx = DOL.indexOf(row); // fallback
+      while (idx > 0) {
+        const prevIdx = idx - 1;
+        const prevS = DOL[prevIdx][cs];
+        if (!prevS || prevS === '-') break;
+        const prevImax = lookupImax(k, prevS, 'DOL');
+        if (prevImax == null) break;
+        const sel = cableSelCurrent(k, prevS, Ifl, 'DOL');
+        if (prevImax < sel.I) break; // smaller cable is insufficient — stop
+        // ✅ smaller cable is still safe — downsize
+        idx = prevIdx;
+        cables[k] = { s: DOL[idx][cs], p: DOL[idx][cp] };
+        conds[k]  = { s: DOL[idx][ds], p: DOL[idx][dp] };
+      }
+    });
+
     const vds_dol = {}, imax_dol = {}, isel_dol = {};
     ['vct','cv','nyy','thw'].forEach(k => { vds_dol[k] = calcVD(k, cables[k].s, Ifl, dist, V, 'DOL'); imax_dol[k] = lookupImax(k, cables[k].s, 'DOL'); isel_dol[k] = cableSelCurrent(k, cables[k].s, Ifl, 'DOL'); });
     r = {mode:'DOL', kw, dist, V, pf, eff, Ifl, Iwork:Ifl, ratedA, hp:row[1], A:row[2], comps, cables, conds, vd:vds_dol, imax:imax_dol, isel:isel_dol, rawRow:row, olt};
@@ -1273,7 +1280,7 @@ function calculate() {
       el.className='pv err';
     }
     else{el.textContent=fmt(prices[k]);el.className='pv';}
- 
+
     // ── Voltage drop chip (VD%) ─────────────────────────────────
     const vdEl = document.getElementById('pvd-'+k);
     if (vdEl) {
@@ -1643,7 +1650,7 @@ const BOQ_HEADER = {
 const BOQ_FIXED_ITEMS = [
   // (ลูกลอยไฟฟ้าถูกเอาออกแล้ว — ถ้าต้องการเพิ่มรายการมาตรฐานกลับมา ใส่ที่นี่)
 ];
- 
+
 // ── copyBOQ ──────────────────────────────────────────────────────────────────
 // Copies the FULL BOQ as a rich HTML <table> (merged header cells + colours),
 // so pasting into a BLANK Excel sheet reproduces the company form 1:1.
@@ -1658,7 +1665,7 @@ function copyBOQ() {
   const cab   = r.cables[ck];
   const cond  = r.conds[ck];
   const H     = BOQ_HEADER;
- 
+
   // ── amounts ────────────────────────────────────────────────────────────────
   const cabT     = cab.p  != null ? cab.p  * r.dist : null;
   const conT     = cond.p != null ? cond.p * r.dist : null;
@@ -1672,11 +1679,11 @@ function copyBOQ() {
   const condLbl  = conduitLabel(cond.s, r.mode);
   const d = new Date();
   const dateStr = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
- 
+
   const c = n => (n == null || isNaN(n)) ? '-'
     : Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
- 
+
   // ── styles ── (DilleniaUPC 12pt, ไม่หนา, จัดกึ่งกลางทุกช่อง)
   const FONT='font-family:DilleniaUPC,\'Angsana New\',\'Cordia New\',serif;font-size:12pt;font-weight:normal;';
   const BD='border:1px solid #000;padding:2px 5px;'+FONT+'vertical-align:middle;text-align:center;';
@@ -1688,13 +1695,13 @@ function copyBOQ() {
   const empt    = (n, st='') => { let s=''; for (let i=0;i<n;i++) s+=`<td style="${BD}${st}"></td>`; return s; };
   // tail after BOQ-TOTAL: Actual(5) + Conclusion(2, yellow) + REMARK(1)
   const tail = (st='') => empt(5, st) + `<td style="${BD}${YE}"></td><td style="${BD}${YE}"></td><td style="${BD}${st}"></td>`;
- 
+
   const T = [];
   T.push('<table border="1" style="border-collapse:collapse;">');
- 
+
   // ── Title ──
   T.push(`<tr><td colspan="18" style="border:none;${C}color:#000;${FONT}">${esc(H.title)}</td></tr>`);
- 
+
   // ── Company + project metadata (logo cell spans 4 rows) ──
   T.push('<tr>'
     + `<td rowspan="4" style="${BD}${C}color:#000;">${esc(H.company)}</td>`
@@ -1717,7 +1724,7 @@ function copyBOQ() {
     + `<td style="${BD}">JOB :</td><td colspan="7" style="${BD}">${esc(H.job)}</td>`
     + `<td colspan="3" style="${BD}">IO :</td><td colspan="2" style="${BD}"></td>`
     + '</tr>');
- 
+
   // ── Column header (3 stacked rows, mirrors the merged Excel cells) ──
   T.push('<tr>'
     + `<td rowspan="3" style="${BD}${C}${BL}">ITEM</td>`
@@ -1744,7 +1751,7 @@ function copyBOQ() {
     + `<td style="${BD}${C}${GB}">UNIT PRICE @</td><td style="${BD}${C}${GB}">AMOUNT (BHT)</td>`
     + `<td style="${BD}${C}${GYb}">(BHT)</td><td style="${BD}${C}${GYb}">(BHT)</td>`
     + '</tr>');
- 
+
   // ── Body row helpers ──
   const rowSection = (item, label) => '<tr>'
     + cell(item, C) + cell(label, L)
@@ -1768,7 +1775,7 @@ function copyBOQ() {
     + numCell('', GY) + numCell(amt, GY) + numCell('', GY) + numCell('0.0', GY) + numCell(amt, GY)
     + tail(GY) + '</tr>';
   const blank = () => '<tr>' + empt(18) + '</tr>';
- 
+
   // ── Body ──
   T.push(rowSection('', 'งานติดตั้งชุดสตาร์ทมอเตอร์'));
   T.push(rowSection('1', 'ตู้ชุดสตาร์ท'));
@@ -1795,7 +1802,7 @@ function copyBOQ() {
   T.push(rowGray('Total', '1.0', 'Job', c(grandT)));
   T.push('</table>');
   const html = T.join('');
- 
+
   // ── Plain-text TSV fallback (same 18-column body) ──
   const COLS = 18;
   const mk = (m) => { const a = new Array(COLS).fill(''); for (const k in m) a[k] = m[k]; return a; };
@@ -1824,7 +1831,7 @@ function copyBOQ() {
   rows.push(mk({}));
   rows.push(mk({ 1: 'Total', 2: '1.0', 4: 'Job', 6: c(grandT), 8: '0.0', 9: c(grandT) }));
   const tsv = rows.map(a => a.map(x => String(x).replace(/\t/g, ' ').replace(/\n/g, ' ')).join('\t')).join('\n');
- 
+
   // ── write HTML + plain text to the clipboard ──
   if (navigator.clipboard && window.ClipboardItem) {
     try {
@@ -1838,7 +1845,7 @@ function copyBOQ() {
   }
   fallbackCopyHTML(html, tsv);
 }
- 
+
 // Rich-HTML clipboard fallback: select a hidden contenteditable & execCommand('copy')
 function fallbackCopyHTML(html, tsv) {
   try {
@@ -1890,14 +1897,14 @@ window.onload=()=>{
   calculate();
   pickCable('cv');
 };
- 
+
 // ── Dark / Light mode ─────────────────────────────────────────────
 function applyDark(on) {
   document.body.classList.toggle('dark', on);
   const btn = document.getElementById('theme-toggle');
   if (btn) btn.textContent = on ? '🌙 Dark' : '☀️ Light';
 }
- 
+
 function toggleTheme() {
   const isDark = document.body.classList.contains('dark');
   applyDark(!isDark);
@@ -1906,4 +1913,3 @@ function toggleTheme() {
 </script>
 </body>
 </html>
- 
