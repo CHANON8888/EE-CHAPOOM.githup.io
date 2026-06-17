@@ -495,6 +495,52 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
   .grid{grid-template-columns:1fr}
   .pcards{grid-template-columns:1fr 1fr}
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — ปรับให้พอดีจอมือถือ
+   ทำให้เว็บที่ออกแบบบนคอม เปิดบนมือถือแล้ว "พอดีจอ" ไม่ล้นแนวนอน
+   ══════════════════════════════════════════════════════════════ */
+
+/* กันไม่ให้ทั้งหน้าเลื่อนซ้าย-ขวา (horizontal scroll) บนมือถือ */
+html, body { max-width:100%; overflow-x:hidden; }
+
+/* ตารางที่กว้าง ให้เลื่อนดูได้ "ในกล่องของตัวเอง"
+   แทนที่จะดันให้ทั้งหน้ากว้างเกินจอ */
+#comp-area, #boq-area, .boq-wrap {
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;   /* เลื่อนลื่นบน iOS */
+}
+
+/* ── แท็บเล็ต / มือถือแนวนอน (≤768px) ───────────────────────── */
+@media (max-width:768px){
+  .wrap   { padding:16px 12px; }
+  .topbar { padding:22px 20px; }
+  .tags   { margin-left:0; }                 /* ป้ายแท็กไม่ดันออกขอบ */
+  .pcards { grid-template-columns:1fr 1fr; gap:8px; }
+}
+
+/* ── มือถือแนวตั้ง (≤520px) ──────────────────────────────────── */
+@media (max-width:520px){
+  .wrap   { padding:12px 10px; }
+  .topbar { padding:18px 16px; flex-direction:column; align-items:flex-start; gap:12px; }
+  #theme-toggle { align-self:flex-end; }
+
+  /* การ์ดราคา: เหลือ 1 คอลัมน์ อ่านง่าย ไม่ถูกบีบจนล้น */
+  .pcards { grid-template-columns:1fr; padding:12px; }
+
+  /* ช่องกรอกข้อมูล: ป้ายชื่ออยู่ด้านบน ช่องกรอก+หน่วยอยู่บรรทัดล่าง */
+  .irow       { grid-template-columns:1fr auto; gap:5px 8px; }
+  .irow label { grid-column:1 / -1; margin-bottom:1px; }
+
+  /* ลดขนาดตัวอักษร/ระยะห่างในตาราง ให้พอดีจอเล็ก */
+  .rtable, .boqt, .boq-xl { font-size:11.5px; }
+  .rtable td, .boqt td, .boq-xl td { padding:6px 8px; }
+  .rtable thead th, .boqt th, .boq-xl th { padding:6px 8px; }
+
+  .cbody { padding:13px; }
+  .chead { padding:11px 13px; }
+}
 </style>
 </head>
 <body>
