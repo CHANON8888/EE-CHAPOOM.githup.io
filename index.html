@@ -504,6 +504,15 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 /* กันไม่ให้ทั้งหน้าเลื่อนซ้าย-ขวา (horizontal scroll) บนมือถือ */
 html, body { max-width:100%; overflow-x:hidden; }
 
+/* ★ FIX สำคัญ: กัน grid/flex "blow-out"
+   ช่องกรอก/การ์ด มีความกว้างขั้นต่ำในตัวเอง ถ้าไม่สั่ง min-width:0
+   มันจะดันการ์ดทั้งใบกว้างเกินจอ แล้วถูกตัดขอบขวาหาย
+   บรรทัดนี้บังคับให้ทุกชิ้นยอมหดให้พอดีจอ */
+.grid > *, .rcol > *, .card, .cbody, .pcards, .pcard,
+.irow, .irow > * { min-width:0; }
+.irow input, .irow select { min-width:0; max-width:100%; }
+img, table, pre { max-width:100%; }
+
 /* ตารางที่กว้าง ให้เลื่อนดูได้ "ในกล่องของตัวเอง"
    แทนที่จะดันให้ทั้งหน้ากว้างเกินจอ */
 #comp-area, #boq-area, .boq-wrap {
