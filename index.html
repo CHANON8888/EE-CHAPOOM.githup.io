@@ -1516,11 +1516,13 @@ function renderComps(r) {
 // Inch sizes (0.5", 1", 4" …) stay as "ท่อ IMC".
 function conduitLabel(sizeStr, mode) {
   if (sizeStr && /mm$/i.test(String(sizeStr).trim())) {
+    // ราง (cable ladder) → ต่อท้าย (กลุ่ม 7)
     return mode === 'STAR-DELTA'
-      ? 'รางเคเบิลบันไดมีฝาปิดวางห่างกัน 2D'
-      : 'รางเคเบิลบันไดมีฝาปิดวางชิดติดกัน';
+      ? 'รางเคเบิลบันไดมีฝาปิดวางห่างกัน 2D (กลุ่ม 7)'
+      : 'รางเคเบิลบันไดมีฝาปิดวางชิดติดกัน (กลุ่ม 7)';
   }
-  return 'ท่อ IMC';
+  // ท่อ (conduit) → ต่อท้าย (กลุ่ม 2)
+  return 'ท่อ IMC (กลุ่ม 2)';
 }
  
 // ── fmtN ─────────────────────────────────────────────────────────────────────
