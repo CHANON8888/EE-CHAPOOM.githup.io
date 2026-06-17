@@ -501,6 +501,9 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
    ทำให้เว็บที่ออกแบบบนคอม เปิดบนมือถือแล้ว "พอดีจอ" ไม่ล้นแนวนอน
    ══════════════════════════════════════════════════════════════ */
 
+/* กันมือถือขยายขนาดฟอนต์เอง = ต้นเหตุ "ฟอนต์เพี้ยน/ไม่เท่ากัน" บนมือถือ */
+html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+
 /* กันไม่ให้ทั้งหน้าเลื่อนซ้าย-ขวา (horizontal scroll) บนมือถือ */
 html, body { max-width:100%; overflow-x:hidden; }
 
@@ -532,11 +535,20 @@ img, table, pre { max-width:100%; }
 /* ── มือถือแนวตั้ง (≤520px) ──────────────────────────────────── */
 @media (max-width:520px){
   .wrap   { padding:12px 10px; }
-  .topbar { padding:18px 16px; flex-direction:column; align-items:flex-start; gap:12px; }
-  #theme-toggle { align-self:flex-end; }
 
-  /* การ์ดราคา: เหลือ 1 คอลัมน์ อ่านง่าย ไม่ถูกบีบจนล้น */
-  .pcards { grid-template-columns:1fr; padding:12px; }
+  /* หัวเว็บ (header) — ทำให้กระชับ ไม่สูงโล่งเกินไป
+     เดิม .brand มี flex:1 1 280px ทำให้กล่องสูง 280px เปล่า ๆ บนมือถือ */
+  .topbar { padding:16px 16px; gap:10px; }
+  .brand  { flex:none; width:100%; }
+  .brand-title { font-size:20px; line-height:1.2; letter-spacing:-0.5px; }
+  #theme-toggle { align-self:flex-start; }
+
+  /* การ์ดเลือกชนิดสาย — 2 คอลัมน์ (เหมือนตัวอย่างที่ต้องการ) + เล็กลง */
+  .pcards { grid-template-columns:1fr 1fr; padding:12px; gap:8px; }
+  .pcard  { padding:10px; }
+  .pcard .pv { font-size:15px; }
+  .pcard .pt { font-size:9px; }
+  .pcard .ps { font-size:9.5px; }
 
   /* ช่องกรอกข้อมูล: ป้ายชื่ออยู่ด้านบน ช่องกรอก+หน่วยอยู่บรรทัดล่าง */
   .irow       { grid-template-columns:1fr auto; gap:5px 8px; }
