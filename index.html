@@ -39,7 +39,8 @@ body.dark .cbtn,body.dark .home-btn.primary{color:#0d0d0f;}
 
 *{margin:0;padding:0;box-sizing:border-box;}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
-body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5;}
+body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5;overflow-x:clip;}
+img,svg,table{max-width:100%;}
 .mono{font-family:'IBM Plex Mono',monospace;}
 .wrap{max-width:1180px;margin:0 auto;padding:36px 28px 64px;}
 
@@ -264,15 +265,34 @@ body.dark .boq-copy-btn{border-color:rgba(139,141,245,0.32);}
 .calc-note .cn-result-lbl{font-size:10.5px;opacity:0.85;font-family:'IBM Plex Sans Thai',sans-serif;font-weight:600;letter-spacing:0.04em;}
 
 @media(max-width:760px){
-  .wrap{padding:24px 14px 48px;}
-  .nav-inner{padding:10px 14px;gap:10px;}
-  .pcards{grid-template-columns:1fr 1fr;}
+  .wrap{padding:22px 12px 44px;}
+  .nav-inner{padding:10px 12px;gap:8px;}
+  .nav-links{margin-left:2px;gap:2px;}
+  .nav-link{padding:7px 11px;font-size:13px;}
+  .topbar{margin-bottom:20px;}
+  .card{border-radius:14px;margin-bottom:16px;}
+  .chead{padding:14px 16px;}
+  .cbody{padding:16px;}
+  .input-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:13px 12px;}
+  .pcards{grid-template-columns:1fr 1fr;padding:16px 16px 6px;gap:10px;}
+  .boq-toolbar{padding:14px 16px 10px;}
+  .notice{margin:14px 16px 16px;}
+  .ph{padding:36px 16px;}
+  /* let wide tables scroll inside their own card, not push the whole page */
   #comp-area,#boq-area,.boq-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 }
-@media(max-width:440px){
+@media(max-width:480px){
+  .wrap{padding:18px 10px 40px;}
+  .pcards{grid-template-columns:1fr;}
+  .input-grid{grid-template-columns:1fr;}
   .input-foot{flex-direction:column;}
-  .cbtn{width:100%;}
+  .curbox{flex-basis:auto;}
+  .cbtn{width:100%;min-width:0;}
   .nav-brand span{display:none;}
+  .curbox .big{font-size:26px;}
+  .rtable,.boq-xl{font-size:11.5px;}
+  .rtable td,.rtable thead th{padding:8px 10px;}
+  .boq-xl th,.boq-xl td{padding:7px 8px;}
 }
 
 </style>
