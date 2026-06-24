@@ -264,8 +264,12 @@ body.dark .boq-copy-btn{border-color:rgba(139,141,245,0.32);}
 .calc-note .cn-result-lbl{font-size:10.5px;opacity:0.85;font-family:'IBM Plex Sans Thai',sans-serif;font-weight:600;letter-spacing:0.04em;}
 
 @media(max-width:760px){
+  html,body{overflow-x:clip;max-width:100%;}
   .wrap{padding:24px 14px 48px;}
-  .nav-inner{padding:10px 14px;gap:10px;}
+  .nav-inner{padding:10px 14px;gap:8px;}
+  .nav-links{margin-left:6px;flex:1 1 auto;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;}
+  .nav-links::-webkit-scrollbar{display:none;}
+  .nav-spacer{display:none;}
   .pcards{grid-template-columns:1fr 1fr;}
   #comp-area,#boq-area,.boq-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 }
@@ -273,6 +277,8 @@ body.dark .boq-copy-btn{border-color:rgba(139,141,245,0.32);}
   .input-foot{flex-direction:column;}
   .cbtn{width:100%;}
   .nav-brand span{display:none;}
+  .nav-link{padding:8px 11px;font-size:13px;}
+  .theme-toggle{padding:8px 12px;}
 }
 
 </style>
